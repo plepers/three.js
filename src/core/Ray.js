@@ -20,16 +20,20 @@ THREE.Ray = function ( origin, direction ) {
 	var c = new THREE.Vector3();
 	var d = new THREE.Vector3();
 
-	var originCopy = new THREE.Vector3();
-	var directionCopy = new THREE.Vector3();
+    var origin_inv = new THREE.Vector3();
+	var direction_inv = new THREE.Vector3();
 
 	var vector = new THREE.Vector3();
 	var normal = new THREE.Vector3();
-	var intersectPoint = new THREE.Vector3()
+	var intersectPoint = new THREE.Vector3();
+	var point;
 
 	this.intersectObject = function ( object ) {
 
 		var intersect, intersects = [];
+
+        origin_inv.copy( origin );
+        direction_inv.copy( direction );
 
 		if ( object instanceof THREE.Particle ) {
 
@@ -71,24 +75,29 @@ THREE.Ray = function ( origin, direction ) {
 			geometry = object.geometry,
 			vertices = geometry.vertices,
 			objMatrix;
+            var invObjMtx = new THREE.Matrix4();
+            invObjMtx.getInverse( object.matrixWorld );
+
+            invObjMtx.multiplyVector3( origin_inv );
+            invObjMtx.rotateAxis( direction_inv );
 
 			object.matrixRotationWorld.extractRotation( object.matrixWorld );
+            objMatrix = object.matrixWorld;
 
 			for ( f = 0, fl = geometry.faces.length; f < fl; f ++ ) {
 
 				face = geometry.faces[ f ];
 
-				originCopy.copy( this.origin );
-				directionCopy.copy( this.direction );
-
-				objMatrix = object.matrixWorld;
 
 				// determine if ray intersects the plane of the face
 				// note: this works regardless of the direction of the face normal
 
-				vector = objMatrix.multiplyVector3( vector.copy( face.centroid ) ).subSelf( originCopy );
-				normal = object.matrixRotationWorld.multiplyVector3( normal.copy( face.normal ) );
-				dot = directionCopy.dot( normal );
+				vector.x = face.centroid.x - origin_inv.x;
+				vector.y = face.centroid.y - origin_inv.y;
+				vector.z = face.centroid.z - origin_inv.z;
+
+				normal = face.normal;
+				dot = direction_inv.dot( normal );
 
 				// bail if ray and plane are parallel
 
@@ -102,58 +111,69 @@ THREE.Ray = function ( origin, direction ) {
 
 				if ( scalar < 0 ) continue;
 
-				if ( object.doubleSided || ( object.flipSided ? dot > 0 : dot < 0 ) ) {
+                if ( object.doubleSided || ( object.flipSided ? dot > 0 : dot < 0 ) ) {
 
-					intersectPoint.add( originCopy, directionCopy.multiplyScalar( scalar ) );
+                    //intersectPoint.add( origin_inv, directionCopy.multiplyScalar( scalar ) );
+                    intersectPoint.x = origin_inv.x + direction_inv.x*scalar;
+                    intersectPoint.y = origin_inv.y + direction_inv.y*scalar;
+                    intersectPoint.z = origin_inv.z + direction_inv.z*scalar;
 
-					if ( face instanceof THREE.Face3 ) {
 
-						a = objMatrix.multiplyVector3( a.copy( vertices[ face.a ] ) );
-						b = objMatrix.multiplyVector3( b.copy( vertices[ face.b ] ) );
-						c = objMatrix.multiplyVector3( c.copy( vertices[ face.c ] ) );
+                    if ( face instanceof THREE.Face3 ) {
 
-						if ( pointInFace3( intersectPoint, a, b, c ) ) {
+                        a = vertices[ face.a ];
+                        b = vertices[ face.b ];
+                        c = vertices[ face.c ];
 
-							intersect = {
+                        if ( pointInFace3( intersectPoint, a, b, c ) ) {
 
-								distance: originCopy.distanceTo( intersectPoint ),
-								point: intersectPoint.clone(),
-								face: face,
-								object: object
+                            point = intersectPoint.clone();
+                            objMatrix.multiplyVector3( point );
 
-							};
+                            intersect = {
 
-							intersects.push( intersect );
+                                distance: origin.distanceTo( point ),
+                                point: point,
+                                face: face,
+                                object: object
 
-						}
+                            };
 
-					} else if ( face instanceof THREE.Face4 ) {
+                            intersects.push( intersect );
 
-						a = objMatrix.multiplyVector3( a.copy( vertices[ face.a ] ) );
-						b = objMatrix.multiplyVector3( b.copy( vertices[ face.b ] ) );
-						c = objMatrix.multiplyVector3( c.copy( vertices[ face.c ] ) );
-						d = objMatrix.multiplyVector3( d.copy( vertices[ face.d ] ) );
+                        }
 
-						if ( pointInFace3( intersectPoint, a, b, d ) || pointInFace3( intersectPoint, b, c, d ) ) {
+                    } else if ( face instanceof THREE.Face4 ) {
 
-							intersect = {
+                        a = vertices[ face.a ];
+                        b = vertices[ face.b ];
+                        c = vertices[ face.c ];
+                        d = vertices[ face.d ];
 
-								distance: originCopy.distanceTo( intersectPoint ),
-								point: intersectPoint.clone(),
-								face: face,
-								object: object
+                        if ( pointInFace4( intersectPoint, a, b, c, d ) ) {
 
-							};
+                            //if ( pointInFace3( intersectPoint, b, d, a ) || pointInFace3( intersectPoint, b, d, c ) ) {
+                            point = intersectPoint.clone();
+                            objMatrix.multiplyVector3( point );
 
-							intersects.push( intersect );
+                            intersect = {
 
-						}
+                                distance: origin.distanceTo( point ),
+                                point: point,
+                                face: face,
+                                object: object
 
-					}
+                            };
 
-				}
+                            intersects.push( intersect );
 
-			}
+                        }
+
+                    }
+
+                }
+
+            }
 
 		}
 
@@ -213,6 +233,38 @@ THREE.Ray = function ( origin, direction ) {
 		v = ( dot00 * dot12 - dot01 * dot02 ) * invDenom;
 
 		return ( u >= 0 ) && ( v >= 0 ) && ( u + v < 1 );
+
+	}
+
+    function pointInFace4( p, a, b, c, d ) {
+
+		v0.sub( c, a );
+		v1.sub( b, a );
+		v2.sub( p, a );
+
+		dot00 = v0.dot( v0 );
+		dot01 = v0.dot( v1 );
+		dot02 = v0.dot( v2 );
+		dot11 = v1.dot( v1 );
+		dot12 = v1.dot( v2 );
+
+		invDenom = 1 / ( dot00 * dot11 - dot01 * dot01 );
+		u = ( dot11 * dot02 - dot01 * dot12 ) * invDenom;
+		v = ( dot00 * dot12 - dot01 * dot02 ) * invDenom;
+
+		if ( ( u >= 0 ) && ( v >= 0 ) && ( u + v < 1 ) ) return true;
+
+        v0.sub( d, a );
+
+        dot00 = v0.dot( v0 );
+        dot01 = v0.dot( v1 );
+        dot02 = v0.dot( v2 );
+
+        invDenom = 1 / ( dot00 * dot11 - dot01 * dot01 );
+        u = ( dot11 * dot02 - dot01 * dot12 ) * invDenom;
+        v = ( dot00 * dot12 - dot01 * dot02 ) * invDenom;
+
+        return ( u >= 0 ) && ( v >= 0 ) && ( u + v < 1 );
 
 	}
 
