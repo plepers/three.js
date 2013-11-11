@@ -1,0 +1,4 @@
+[
+	"examples/js/controls/OrbitControls.js",
+	"src/extras/geometries/TeapotGeometry.js"
+]
