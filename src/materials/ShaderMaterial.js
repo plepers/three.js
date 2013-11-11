@@ -50,6 +50,8 @@ THREE.ShaderMaterial = function ( parameters ) {
 
 	this.lights = false; // set to use scene lights
 
+  this.commons = false;
+
 	this.vertexColors = THREE.NoColors; // set to use "color" attribute stream
 
 	this.skinning = false; // set to use skinning attribute streams

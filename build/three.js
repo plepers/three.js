@@ -14025,6 +14025,8 @@ THREE.ShaderMaterial = function ( parameters ) {
 
 	this.lights = false; // set to use scene lights
 
+  this.commons = false;
+
 	this.vertexColors = THREE.NoColors; // set to use "color" attribute stream
 
 	this.skinning = false; // set to use skinning attribute streams
@@ -23907,7 +23909,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			if ( material instanceof THREE.MeshBasicMaterial ||
 				 material instanceof THREE.MeshLambertMaterial ||
-				 material instanceof THREE.MeshPhongMaterial ) {
+				 material instanceof THREE.MeshPhongMaterial ||
+         material.commons ) {
 
 				refreshUniformsCommon( m_uniforms, material );
 
@@ -24280,6 +24283,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			type = uniform.type;
 			value = uniform.value;
+
 
 			if ( type === "i" ) { // single integer
 
