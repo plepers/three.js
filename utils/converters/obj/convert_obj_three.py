@@ -481,6 +481,9 @@ def parse_vertex(text):
             n = int(chunks[2])
 
     return { 'v':v, 't':t, 'n':n }
+    
+def univ_file_read(name, mode):
+    return open(name, 'rU')
 
 def parse_obj(fname):
     """Parse OBJ file.
@@ -504,7 +507,9 @@ def parse_obj(fname):
     object = 0
     smooth = 0
 
-    for line in fileinput.input(fname):
+	
+    for line in fileinput.input(fname, openhook=univ_file_read):
+        
         chunks = line.split()
         if len(chunks) > 0:
 
