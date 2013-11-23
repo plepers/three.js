@@ -1,0 +1,1 @@
+python build.py --include common --include extras --include specialt --output ../../build/three.js
