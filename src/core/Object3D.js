@@ -107,25 +107,45 @@ THREE.Object3D.prototype = {
 
 	},
 
-	applyMatrix: function () {
+  applyMatrix: function () {
 
-		var m1 = new THREE.Matrix4();
+    var m1 = new THREE.Matrix4();
 
-		return function ( matrix ) {
+    return function ( matrix ) {
 
-			this.matrix.multiplyMatrices( matrix, this.matrix );
+      this.matrix.multiplyMatrices( matrix, this.matrix );
 
-			this.position.getPositionFromMatrix( this.matrix );
+      this.position.getPositionFromMatrix( this.matrix );
 
-			this.scale.getScaleFromMatrix( this.matrix );
+      this.scale.getScaleFromMatrix( this.matrix );
 
-			m1.extractRotation( this.matrix );
+      m1.extractRotation( this.matrix );
 
-			this.quaternion.setFromRotationMatrix( m1 );
+      this.quaternion.setFromRotationMatrix( m1 );
 
-		}
+    }
 
-	}(),
+  }(),
+
+  setMatrix: function () {
+
+    var m1 = new THREE.Matrix4();
+
+    return function ( matrix ) {
+
+      this.matrix.copy( matrix );
+
+      this.position.getPositionFromMatrix( matrix );
+
+      this.scale.getScaleFromMatrix( matrix );
+
+      m1.extractRotation( matrix );
+
+      this.quaternion.setFromRotationMatrix( m1 );
+
+    }
+
+  }(),
 
 	setRotationFromAxisAngle: function ( axis, angle ) {
 
