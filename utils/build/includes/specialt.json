@@ -1,3 +1,4 @@
 [
-	"examples/js/controls/OrbitControls.js"
+	"examples/js/controls/OrbitControls.js",
+	"examples/js/controls/FirstPersonControls.js"
 ]
