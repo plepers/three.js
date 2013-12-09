@@ -4057,7 +4057,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		var u, a, identifiers, i, parameters, maxLightCount, maxBones, maxShadows, shaderID;
 
-		if ( material instanceof THREE.MeshDepthMaterial ) {
+    if( material.shaderData != null ) {
+      shaderID = null
+      setMaterialShaders( material, material.shaderData );
+
+    } else if ( material instanceof THREE.MeshDepthMaterial ) {
 
 			shaderID = 'depth';
 
@@ -4317,6 +4321,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 				refreshUniformsFog( m_uniforms, fog );
 
 			}
+
+
+      if ( material.shaderData != null ) {
+        material.refreshUniforms(m_uniforms)
+      }
 
 			if ( material instanceof THREE.MeshPhongMaterial ||
 				 material instanceof THREE.MeshLambertMaterial ||

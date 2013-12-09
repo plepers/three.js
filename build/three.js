@@ -17120,7 +17120,7 @@ THREE.ShaderChunk = {
 
 		"#endif",
 
-		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP )",
+		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( NEED_WORLD_POS )",
 
 			"varying vec3 vWorldPosition;",
 
@@ -17169,7 +17169,7 @@ THREE.ShaderChunk = {
 
 		"#endif",
 
-		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP )",
+		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( NEED_WORLD_POS )",
 
 			"vWorldPosition = worldPosition.xyz;",
 
@@ -17233,7 +17233,7 @@ THREE.ShaderChunk = {
 
 		"#endif",
 
-		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP )",
+		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( NEED_WORLD_POS )",
 
 			"varying vec3 vWorldPosition;",
 
@@ -23662,7 +23662,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		var u, a, identifiers, i, parameters, maxLightCount, maxBones, maxShadows, shaderID;
 
-		if ( material instanceof THREE.MeshDepthMaterial ) {
+    if( material.shaderData != null ) {
+      shaderID = null
+      setMaterialShaders( material, material.shaderData );
+
+    } else if ( material instanceof THREE.MeshDepthMaterial ) {
 
 			shaderID = 'depth';
 
@@ -23922,6 +23926,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 				refreshUniformsFog( m_uniforms, fog );
 
 			}
+
+
+      if ( material.shaderData != null ) {
+        material.refreshUniforms(m_uniforms)
+      }
 
 			if ( material instanceof THREE.MeshPhongMaterial ||
 				 material instanceof THREE.MeshLambertMaterial ||

@@ -720,7 +720,7 @@ THREE.ShaderChunk = {
 
 		"#endif",
 
-		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP )",
+		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( NEED_WORLD_POS )",
 
 			"varying vec3 vWorldPosition;",
 
@@ -769,7 +769,7 @@ THREE.ShaderChunk = {
 
 		"#endif",
 
-		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP )",
+		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( NEED_WORLD_POS )",
 
 			"vWorldPosition = worldPosition.xyz;",
 
@@ -833,7 +833,7 @@ THREE.ShaderChunk = {
 
 		"#endif",
 
-		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP )",
+		"#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( NEED_WORLD_POS )",
 
 			"varying vec3 vWorldPosition;",
 
