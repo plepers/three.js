@@ -52,31 +52,31 @@ THREE.Object3D = function () {
 THREE.Object3D.prototype = {
 
 	constructor: THREE.Object3D,
-	
-	get rotation () { 
-		return this._rotation; 
+
+	get rotation () {
+		return this._rotation;
 	},
 
 	set rotation ( value ) {
-		
+
 		this._rotation = value;
 		this._rotation._quaternion = this._quaternion;
 		this._quaternion._euler = this._rotation;
 		this._rotation._updateQuaternion();
-		
+
 	},
 
-	get quaternion () { 
-		return this._quaternion; 
+	get quaternion () {
+		return this._quaternion;
 	},
-	
+
 	set quaternion ( value ) {
-		
+
 		this._quaternion = value;
 		this._quaternion._euler = this._rotation;
 		this._rotation._quaternion = this._quaternion;
 		this._quaternion._updateEuler();
-		
+
 	},
 
 	get eulerOrder () {
@@ -142,6 +142,8 @@ THREE.Object3D.prototype = {
       m1.extractRotation( matrix );
 
       this.quaternion.setFromRotationMatrix( m1 );
+
+      this.matrixWorldNeedsUpdate = true;
 
     }
 
