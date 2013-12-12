@@ -25493,13 +25493,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			setTextureParameters( _gl.TEXTURE_2D, texture, isImagePowerOfTwo );
 
-      if(opts != null ) {
-      if( opts.magFilter )
-        _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, paramThreeToGL( opts.magFilter  ) );
-      if( opts.minFilter )
-        _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, paramThreeToGL( opts.minFilter ) );
-
-      }
 
 			var mipmap, mipmaps = texture.mipmaps;
 
@@ -25577,7 +25570,16 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
-	};
+    if(opts != null ) {
+      if( opts.magFilter )
+        _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, paramThreeToGL( opts.magFilter  ) );
+      if( opts.minFilter )
+        _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, paramThreeToGL( opts.minFilter ) );
+
+    }
+
+
+  };
 
 	function clampToMaxSize ( image, maxSize ) {
 
