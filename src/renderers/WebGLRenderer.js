@@ -4862,7 +4862,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				} else {
 
-					_this.setTexture( texture, textureUnit );
+					_this.setTexture( texture, textureUnit, uniform.opts );
 
 				}
 
@@ -5854,7 +5854,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	};
 
-	this.setTexture = function ( texture, slot ) {
+	this.setTexture = function ( texture, slot, opts ) {
 
 		if ( texture.needsUpdate ) {
 
@@ -5877,12 +5877,22 @@ THREE.WebGLRenderer = function ( parameters ) {
 			_gl.pixelStorei( _gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha );
 			_gl.pixelStorei( _gl.UNPACK_ALIGNMENT, texture.unpackAlignment );
 
+
+
 			var image = texture.image,
 			isImagePowerOfTwo = isPowerOfTwo( image.width ) && isPowerOfTwo( image.height ),
 			glFormat = paramThreeToGL( texture.format ),
 			glType = paramThreeToGL( texture.type );
 
 			setTextureParameters( _gl.TEXTURE_2D, texture, isImagePowerOfTwo );
+
+      if(opts != null ) {
+      if( opts.magFilter )
+        _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, paramThreeToGL( opts.magFilter  ) );
+      if( opts.minFilter )
+        _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, paramThreeToGL( opts.minFilter ) );
+
+      }
 
 			var mipmap, mipmaps = texture.mipmaps;
 
