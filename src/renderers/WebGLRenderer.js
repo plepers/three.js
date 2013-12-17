@@ -1064,6 +1064,23 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
+    if( geometry.morphTargets != null) {
+      geometry.__webglMorphTargetsBuffers = [];
+
+      var mts = geometry.morphTargets;
+      var i, l;
+
+      for (i = 0, l = mts.length; i < l; i++) {
+        var mt = mts[i];
+
+
+        geometry.__webglMorphTargetsBuffers[i] =
+        mt.buffer = _gl.createBuffer();
+        _gl.bindBuffer( type, mt.buffer );
+        _gl.bufferData( type, mt.array, _gl.STATIC_DRAW );
+      }
+    }
+
 	};
 
 	// Buffer setting
@@ -2527,7 +2544,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
-		// render mesh
+
+
+
+
+    // render mesh
 
 		if ( object instanceof THREE.Mesh ) {
 
@@ -2548,6 +2569,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 				for ( var i = 0, il = offsets.length; i < il; i ++ ) {
 
 					var startIndex = offsets[ i ].index;
+
+          if ( object.morphTargetBase ) {
+
+            setupMorphTargets( material, geometry, object );
+
+          }
 
 					if ( updateBuffers ) {
 
