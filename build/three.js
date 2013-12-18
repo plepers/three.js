@@ -22657,7 +22657,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		} else if ( attributes.position >= 0 ) {
 
-			_gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglVertexBuffer );
+      var buff = geometryGroup.__webglVertexBuffer
+      if(buff == null)
+        buff = geometryGroup.attributes.position.buffer
+
+			_gl.bindBuffer( _gl.ARRAY_BUFFER, buff );
 			enableAttribute( attributes.position );
 			_gl.vertexAttribPointer( attributes.position, 3, _gl.FLOAT, false, 0, 0 );
 
