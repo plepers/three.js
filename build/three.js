@@ -25601,10 +25601,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
-    if(opts != null ) {
-      if( opts.magFilter )
+    
+
+    if(opts !== undefined && opts !== null ) {
+      if( opts.magFilter !== undefined && opts.magFilter !== null )
         _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, paramThreeToGL( opts.magFilter  ) );
-      if( opts.minFilter )
+      if( opts.minFilter !== undefined && opts.minFilter !== null )
         _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, paramThreeToGL( opts.minFilter ) );
 
     }
