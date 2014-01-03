@@ -23959,9 +23959,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 			}
 
 
-      if ( material.customShader != null ) {
-        material.refreshUniforms(m_uniforms)
-      }
 
 			if ( material instanceof THREE.MeshPhongMaterial ||
 				 material instanceof THREE.MeshLambertMaterial ||
@@ -24026,6 +24023,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 				refreshUniformsShadow( m_uniforms, lights );
 
 			}
+
+
+      if ( material.customShader != null ) {
+        material.refreshUniforms(m_uniforms)
+      }
 
 			// load common uniforms
 
@@ -25601,7 +25603,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
-    
+
 
     if(opts !== undefined && opts !== null ) {
       if( opts.magFilter !== undefined && opts.magFilter !== null )
