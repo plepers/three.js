@@ -3989,6 +3989,36 @@ THREE.Matrix3.prototype = {
 
 	},
 
+  flattenToArray: function ( flat ) {
+
+    var te = this.elements;
+    flat[ 0 ] = te[0]; flat[ 1 ] = te[1]; flat[ 2 ] = te[2];
+    flat[ 3 ] = te[3]; flat[ 4 ] = te[4]; flat[ 5 ] = te[5];
+    flat[ 6 ] = te[6]; flat[ 7 ] = te[7]; flat[ 8 ] = te[8];
+
+    return flat;
+
+  },
+
+  flattenToArrayOffset: function( flat, offset ) {
+
+    var te = this.elements;
+    flat[ offset ] = te[0];
+    flat[ offset + 1 ] = te[1];
+    flat[ offset + 2 ] = te[2];
+    
+    flat[ offset + 3 ] = te[3];
+    flat[ offset + 4 ] = te[4];
+    flat[ offset + 5 ] = te[5];
+
+    flat[ offset + 6 ] = te[6];
+    flat[ offset + 7 ] = te[7];
+    flat[ offset + 8 ]  = te[8];
+
+    return flat;
+
+  },
+
 	transpose: function () {
 
 		var tmp, m = this.elements;
@@ -24458,32 +24488,59 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			} else if ( type === "m4") { // single THREE.Matrix4
 
-				if ( uniform._array === undefined ) {
+        if ( uniform._array === undefined ) {
 
-					uniform._array = new Float32Array( 16 );
+          uniform._array = new Float32Array( 16 );
 
-				}
+        }
 
-				value.flattenToArray( uniform._array );
-				_gl.uniformMatrix4fv( location, false, uniform._array );
+        value.flattenToArray( uniform._array );
+        _gl.uniformMatrix4fv( location, false, uniform._array );
 
-			} else if ( type === "m4v" ) { // array of THREE.Matrix4
+      } else if ( type === "m4v" ) { // array of THREE.Matrix4
 
-				if ( uniform._array === undefined ) {
+        if ( uniform._array === undefined ) {
 
-					uniform._array = new Float32Array( 16 * value.length );
+          uniform._array = new Float32Array( 16 * value.length );
 
-				}
+        }
 
-				for ( i = 0, il = value.length; i < il; i ++ ) {
+        for ( i = 0, il = value.length; i < il; i ++ ) {
 
-					value[ i ].flattenToArrayOffset( uniform._array, i * 16 );
+          value[ i ].flattenToArrayOffset( uniform._array, i * 16 );
 
-				}
+        }
 
-				_gl.uniformMatrix4fv( location, false, uniform._array );
+        _gl.uniformMatrix4fv( location, false, uniform._array );
 
-			} else if ( type === "t" ) { // single THREE.Texture (2d or cube)
+      } else if ( type === "m3") { // single THREE.Matrix3
+
+        if ( uniform._array === undefined ) {
+
+          uniform._array = new Float32Array( 9 );
+
+        }
+
+        value.flattenToArray( uniform._array );
+        _gl.uniformMatrix3fv( location, false, uniform._array );
+
+      } else if ( type === "m3v" ) { // array of THREE.Matrix4
+
+        if ( uniform._array === undefined ) {
+
+          uniform._array = new Float32Array( 9 * value.length );
+
+        }
+
+        for ( i = 0, il = value.length; i < il; i ++ ) {
+
+          value[ i ].flattenToArrayOffset( uniform._array, i * 9 );
+
+        }
+
+        _gl.uniformMatrix3fv( location, false, uniform._array );
+
+      } else if ( type === "t" ) { // single THREE.Texture (2d or cube)
 
 				texture = value;
 				textureUnit = getTextureUnit();

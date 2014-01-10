@@ -4851,32 +4851,59 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			} else if ( type === "m4") { // single THREE.Matrix4
 
-				if ( uniform._array === undefined ) {
+        if ( uniform._array === undefined ) {
 
-					uniform._array = new Float32Array( 16 );
+          uniform._array = new Float32Array( 16 );
 
-				}
+        }
 
-				value.flattenToArray( uniform._array );
-				_gl.uniformMatrix4fv( location, false, uniform._array );
+        value.flattenToArray( uniform._array );
+        _gl.uniformMatrix4fv( location, false, uniform._array );
 
-			} else if ( type === "m4v" ) { // array of THREE.Matrix4
+      } else if ( type === "m4v" ) { // array of THREE.Matrix4
 
-				if ( uniform._array === undefined ) {
+        if ( uniform._array === undefined ) {
 
-					uniform._array = new Float32Array( 16 * value.length );
+          uniform._array = new Float32Array( 16 * value.length );
 
-				}
+        }
 
-				for ( i = 0, il = value.length; i < il; i ++ ) {
+        for ( i = 0, il = value.length; i < il; i ++ ) {
 
-					value[ i ].flattenToArrayOffset( uniform._array, i * 16 );
+          value[ i ].flattenToArrayOffset( uniform._array, i * 16 );
 
-				}
+        }
 
-				_gl.uniformMatrix4fv( location, false, uniform._array );
+        _gl.uniformMatrix4fv( location, false, uniform._array );
 
-			} else if ( type === "t" ) { // single THREE.Texture (2d or cube)
+      } else if ( type === "m3") { // single THREE.Matrix3
+
+        if ( uniform._array === undefined ) {
+
+          uniform._array = new Float32Array( 9 );
+
+        }
+
+        value.flattenToArray( uniform._array );
+        _gl.uniformMatrix3fv( location, false, uniform._array );
+
+      } else if ( type === "m3v" ) { // array of THREE.Matrix4
+
+        if ( uniform._array === undefined ) {
+
+          uniform._array = new Float32Array( 9 * value.length );
+
+        }
+
+        for ( i = 0, il = value.length; i < il; i ++ ) {
+
+          value[ i ].flattenToArrayOffset( uniform._array, i * 9 );
+
+        }
+
+        _gl.uniformMatrix3fv( location, false, uniform._array );
+
+      } else if ( type === "t" ) { // single THREE.Texture (2d or cube)
 
 				texture = value;
 				textureUnit = getTextureUnit();
