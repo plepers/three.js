@@ -1,4 +1,6 @@
 [
 	"examples/js/controls/OrbitControls.js",
-	"examples/js/controls/FirstPersonControls.js"
+	"examples/js/controls/FirstPersonControls.js",
+	"examples/js/shaders/BokehShader2.js"
+
 ]

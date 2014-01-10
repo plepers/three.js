@@ -3347,8 +3347,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 			this.setDepthWrite( material.depthWrite );
 			setPolygonOffset( material.polygonOffset, material.polygonOffsetFactor, material.polygonOffsetUnits );
 
-			renderObjects( scene.__webglObjects, false, "", camera, lights, fog, true, material );
-			renderObjectsImmediate( scene.__webglObjectsImmediate, "", camera, lights, fog, false, material );
+			renderObjects( scene.__webglObjects, true, "opaque", camera, lights, fog, true, material );
+			renderObjectsImmediate( scene.__webglObjectsImmediate, "opaque", camera, lights, fog, false, material );
 
 		} else {
 
@@ -3461,6 +3461,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 				if ( overrideMaterial ) {
 
 					material = overrideMaterial;
+
+          if ( ! webglObject[ materialType ] ) continue;
 
 				} else {
 
