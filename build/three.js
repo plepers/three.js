@@ -24422,9 +24422,13 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			} else if ( type === "fv1" ) { // flat array of floats (JS or typed array)
 
-				_gl.uniform1fv( location, value );
+        _gl.uniform1fv( location, value );
 
-			} else if ( type === "fv" ) { // flat array of floats with 3 x N size (JS or typed array)
+      } else if ( type === "fv4" ) { // 
+
+        _gl.uniform4fv( location, value );
+
+      } else if ( type === "fv" ) { // flat array of floats with 3 x N size (JS or typed array)
 
 				_gl.uniform3fv( location, value );
 
