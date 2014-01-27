@@ -23390,12 +23390,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 			object._modelViewMatrix = new THREE.Matrix4();
 			object._normalMatrix = new THREE.Matrix3();
 
-			if ( object.geometry !== undefined && object.geometry.__webglInit === undefined ) {
-
-				object.geometry.__webglInit = true;
-				object.geometry.addEventListener( 'dispose', onGeometryDispose );
-
-			}
 
 			geometry = object.geometry;
 
@@ -23403,9 +23397,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				// fail silently for now
 
-			} else if ( geometry instanceof THREE.BufferGeometry ) {
+			} else if ( geometry instanceof THREE.BufferGeometry  ) {
 
-				initDirectBuffers( geometry );
+        if(  geometry.__webglInit === undefined ) {
+				  initDirectBuffers( geometry );
+        }
 
 			} else if ( object instanceof THREE.Mesh ) {
 
@@ -23469,7 +23465,15 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			}
 
-		}
+      if ( geometry !== undefined && geometry.__webglInit === undefined ) {
+
+        geometry.__webglInit = true;
+        geometry.addEventListener( 'dispose', onGeometryDispose );
+
+      }
+
+
+    }
 
 		if ( object.__webglActive === undefined ) {
 
@@ -24424,7 +24428,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
         _gl.uniform1fv( location, value );
 
-      } else if ( type === "fv4" ) { // 
+      } else if ( type === "fv4" ) { //
 
         _gl.uniform4fv( location, value );
 
