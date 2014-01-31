@@ -113,205 +113,209 @@ THREE.Euler.prototype = {
 
 	},
 
-	setFromRotationMatrix: function ( m, order ) {
+	setFromRotationMatrix: function() {
 
-		// assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
+      function clamp( x ) {
 
-		// clamp, to handle numerical problems
+        return Math.min( Math.max( x, -1 ), 1 );
 
-		function clamp( x ) {
+      };
 
-			return Math.min( Math.max( x, -1 ), 1 );
+      return function ( m, order ) {
 
-		}
+      // assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
 
-		var te = m.elements;
-		var m11 = te[0], m12 = te[4], m13 = te[8];
-		var m21 = te[1], m22 = te[5], m23 = te[9];
-		var m31 = te[2], m32 = te[6], m33 = te[10];
+      // clamp, to handle numerical problems
 
-		order = order || this._order;
 
-		if ( order === 'XYZ' ) {
+      var te = m.elements;
+      var m11 = te[0], m12 = te[4], m13 = te[8];
+      var m21 = te[1], m22 = te[5], m23 = te[9];
+      var m31 = te[2], m32 = te[6], m33 = te[10];
 
-			this._y = Math.asin( clamp( m13 ) );
+      order = order || this._order;
 
-			if ( Math.abs( m13 ) < 0.99999 ) {
+      if ( order === 'XYZ' ) {
 
-				this._x = Math.atan2( - m23, m33 );
-				this._z = Math.atan2( - m12, m11 );
+        this._y = Math.asin( clamp( m13 ) );
 
-			} else {
+        if ( Math.abs( m13 ) < 0.99999 ) {
 
-				this._x = Math.atan2( m32, m22 );
-				this._z = 0;
+          this._x = Math.atan2( - m23, m33 );
+          this._z = Math.atan2( - m12, m11 );
 
-			}
+        } else {
 
-		} else if ( order === 'YXZ' ) {
+          this._x = Math.atan2( m32, m22 );
+          this._z = 0;
 
-			this._x = Math.asin( - clamp( m23 ) );
+        }
 
-			if ( Math.abs( m23 ) < 0.99999 ) {
+      } else if ( order === 'YXZ' ) {
 
-				this._y = Math.atan2( m13, m33 );
-				this._z = Math.atan2( m21, m22 );
+        this._x = Math.asin( - clamp( m23 ) );
 
-			} else {
+        if ( Math.abs( m23 ) < 0.99999 ) {
 
-				this._y = Math.atan2( - m31, m11 );
-				this._z = 0;
+          this._y = Math.atan2( m13, m33 );
+          this._z = Math.atan2( m21, m22 );
 
-			}
+        } else {
 
-		} else if ( order === 'ZXY' ) {
+          this._y = Math.atan2( - m31, m11 );
+          this._z = 0;
 
-			this._x = Math.asin( clamp( m32 ) );
+        }
 
-			if ( Math.abs( m32 ) < 0.99999 ) {
+      } else if ( order === 'ZXY' ) {
 
-				this._y = Math.atan2( - m31, m33 );
-				this._z = Math.atan2( - m12, m22 );
+        this._x = Math.asin( clamp( m32 ) );
 
-			} else {
+        if ( Math.abs( m32 ) < 0.99999 ) {
 
-				this._y = 0;
-				this._z = Math.atan2( m21, m11 );
+          this._y = Math.atan2( - m31, m33 );
+          this._z = Math.atan2( - m12, m22 );
 
-			}
+        } else {
 
-		} else if ( order === 'ZYX' ) {
+          this._y = 0;
+          this._z = Math.atan2( m21, m11 );
 
-			this._y = Math.asin( - clamp( m31 ) );
+        }
 
-			if ( Math.abs( m31 ) < 0.99999 ) {
+      } else if ( order === 'ZYX' ) {
 
-				this._x = Math.atan2( m32, m33 );
-				this._z = Math.atan2( m21, m11 );
+        this._y = Math.asin( - clamp( m31 ) );
 
-			} else {
+        if ( Math.abs( m31 ) < 0.99999 ) {
 
-				this._x = 0;
-				this._z = Math.atan2( - m12, m22 );
+          this._x = Math.atan2( m32, m33 );
+          this._z = Math.atan2( m21, m11 );
 
-			}
+        } else {
 
-		} else if ( order === 'YZX' ) {
+          this._x = 0;
+          this._z = Math.atan2( - m12, m22 );
 
-			this._z = Math.asin( clamp( m21 ) );
+        }
 
-			if ( Math.abs( m21 ) < 0.99999 ) {
+      } else if ( order === 'YZX' ) {
 
-				this._x = Math.atan2( - m23, m22 );
-				this._y = Math.atan2( - m31, m11 );
+        this._z = Math.asin( clamp( m21 ) );
 
-			} else {
+        if ( Math.abs( m21 ) < 0.99999 ) {
 
-				this._x = 0;
-				this._y = Math.atan2( m13, m33 );
+          this._x = Math.atan2( - m23, m22 );
+          this._y = Math.atan2( - m31, m11 );
 
-			}
+        } else {
 
-		} else if ( order === 'XZY' ) {
+          this._x = 0;
+          this._y = Math.atan2( m13, m33 );
 
-			this._z = Math.asin( - clamp( m12 ) );
+        }
 
-			if ( Math.abs( m12 ) < 0.99999 ) {
+      } else if ( order === 'XZY' ) {
 
-				this._x = Math.atan2( m32, m22 );
-				this._y = Math.atan2( m13, m11 );
+        this._z = Math.asin( - clamp( m12 ) );
 
-			} else {
+        if ( Math.abs( m12 ) < 0.99999 ) {
 
-				this._x = Math.atan2( - m23, m33 );
-				this._y = 0;
+          this._x = Math.atan2( m32, m22 );
+          this._y = Math.atan2( m13, m11 );
 
-			}
+        } else {
 
-		} else {
+          this._x = Math.atan2( - m23, m33 );
+          this._y = 0;
 
-			console.warn( 'WARNING: Euler.setFromRotationMatrix() given unsupported order: ' + order )
+        }
 
-		}
+      } else {
 
-		this._order = order;
+        console.warn( 'WARNING: Euler.setFromRotationMatrix() given unsupported order: ' + order )
 
-		this._updateQuaternion();
+      }
 
-		return this;
+      this._order = order;
 
-	},
+      this._updateQuaternion();
 
-	setFromQuaternion: function ( q, order, update ) {
+      return this;
+    }
+	}(),
 
-		// q is assumed to be normalized
+	setFromQuaternion: function() {
 
-		// clamp, to handle numerical problems
+    function clamp( x ) {
 
-		function clamp( x ) {
+      return Math.min( Math.max( x, -1 ), 1 );
 
-			return Math.min( Math.max( x, -1 ), 1 );
+    };
 
-		}
+    return function ( q, order, update ) {
 
-		// http://www.mathworks.com/matlabcentral/fileexchange/20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/content/SpinCalc.m
+      // q is assumed to be normalized
 
-		var sqx = q.x * q.x;
-		var sqy = q.y * q.y;
-		var sqz = q.z * q.z;
-		var sqw = q.w * q.w;
 
-		order = order || this._order;
+      // http://www.mathworks.com/matlabcentral/fileexchange/20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/content/SpinCalc.m
 
-		if ( order === 'XYZ' ) {
+      var sqx = q.x * q.x;
+      var sqy = q.y * q.y;
+      var sqz = q.z * q.z;
+      var sqw = q.w * q.w;
 
-			this._x = Math.atan2( 2 * ( q.x * q.w - q.y * q.z ), ( sqw - sqx - sqy + sqz ) );
-			this._y = Math.asin(  clamp( 2 * ( q.x * q.z + q.y * q.w ) ) );
-			this._z = Math.atan2( 2 * ( q.z * q.w - q.x * q.y ), ( sqw + sqx - sqy - sqz ) );
+      order = order || this._order;
 
-		} else if ( order ===  'YXZ' ) {
+      if ( order === 'XYZ' ) {
 
-			this._x = Math.asin(  clamp( 2 * ( q.x * q.w - q.y * q.z ) ) );
-			this._y = Math.atan2( 2 * ( q.x * q.z + q.y * q.w ), ( sqw - sqx - sqy + sqz ) );
-			this._z = Math.atan2( 2 * ( q.x * q.y + q.z * q.w ), ( sqw - sqx + sqy - sqz ) );
+        this._x = Math.atan2( 2 * ( q.x * q.w - q.y * q.z ), ( sqw - sqx - sqy + sqz ) );
+        this._y = Math.asin(  clamp( 2 * ( q.x * q.z + q.y * q.w ) ) );
+        this._z = Math.atan2( 2 * ( q.z * q.w - q.x * q.y ), ( sqw + sqx - sqy - sqz ) );
 
-		} else if ( order === 'ZXY' ) {
+      } else if ( order ===  'YXZ' ) {
 
-			this._x = Math.asin(  clamp( 2 * ( q.x * q.w + q.y * q.z ) ) );
-			this._y = Math.atan2( 2 * ( q.y * q.w - q.z * q.x ), ( sqw - sqx - sqy + sqz ) );
-			this._z = Math.atan2( 2 * ( q.z * q.w - q.x * q.y ), ( sqw - sqx + sqy - sqz ) );
+        this._x = Math.asin(  clamp( 2 * ( q.x * q.w - q.y * q.z ) ) );
+        this._y = Math.atan2( 2 * ( q.x * q.z + q.y * q.w ), ( sqw - sqx - sqy + sqz ) );
+        this._z = Math.atan2( 2 * ( q.x * q.y + q.z * q.w ), ( sqw - sqx + sqy - sqz ) );
 
-		} else if ( order === 'ZYX' ) {
+      } else if ( order === 'ZXY' ) {
 
-			this._x = Math.atan2( 2 * ( q.x * q.w + q.z * q.y ), ( sqw - sqx - sqy + sqz ) );
-			this._y = Math.asin(  clamp( 2 * ( q.y * q.w - q.x * q.z ) ) );
-			this._z = Math.atan2( 2 * ( q.x * q.y + q.z * q.w ), ( sqw + sqx - sqy - sqz ) );
+        this._x = Math.asin(  clamp( 2 * ( q.x * q.w + q.y * q.z ) ) );
+        this._y = Math.atan2( 2 * ( q.y * q.w - q.z * q.x ), ( sqw - sqx - sqy + sqz ) );
+        this._z = Math.atan2( 2 * ( q.z * q.w - q.x * q.y ), ( sqw - sqx + sqy - sqz ) );
 
-		} else if ( order === 'YZX' ) {
+      } else if ( order === 'ZYX' ) {
 
-			this._x = Math.atan2( 2 * ( q.x * q.w - q.z * q.y ), ( sqw - sqx + sqy - sqz ) );
-			this._y = Math.atan2( 2 * ( q.y * q.w - q.x * q.z ), ( sqw + sqx - sqy - sqz ) );
-			this._z = Math.asin(  clamp( 2 * ( q.x * q.y + q.z * q.w ) ) );
+        this._x = Math.atan2( 2 * ( q.x * q.w + q.z * q.y ), ( sqw - sqx - sqy + sqz ) );
+        this._y = Math.asin(  clamp( 2 * ( q.y * q.w - q.x * q.z ) ) );
+        this._z = Math.atan2( 2 * ( q.x * q.y + q.z * q.w ), ( sqw + sqx - sqy - sqz ) );
 
-		} else if ( order === 'XZY' ) {
+      } else if ( order === 'YZX' ) {
 
-			this._x = Math.atan2( 2 * ( q.x * q.w + q.y * q.z ), ( sqw - sqx + sqy - sqz ) );
-			this._y = Math.atan2( 2 * ( q.x * q.z + q.y * q.w ), ( sqw + sqx - sqy - sqz ) );
-			this._z = Math.asin(  clamp( 2 * ( q.z * q.w - q.x * q.y ) ) );
+        this._x = Math.atan2( 2 * ( q.x * q.w - q.z * q.y ), ( sqw - sqx + sqy - sqz ) );
+        this._y = Math.atan2( 2 * ( q.y * q.w - q.x * q.z ), ( sqw + sqx - sqy - sqz ) );
+        this._z = Math.asin(  clamp( 2 * ( q.x * q.y + q.z * q.w ) ) );
 
-		} else {
+      } else if ( order === 'XZY' ) {
 
-			console.warn( 'WARNING: Euler.setFromQuaternion() given unsupported order: ' + order )
+        this._x = Math.atan2( 2 * ( q.x * q.w + q.y * q.z ), ( sqw - sqx + sqy - sqz ) );
+        this._y = Math.atan2( 2 * ( q.x * q.z + q.y * q.w ), ( sqw + sqx - sqy - sqz ) );
+        this._z = Math.asin(  clamp( 2 * ( q.z * q.w - q.x * q.y ) ) );
 
-		}
+      } else {
 
-		this._order = order;
+        console.warn( 'WARNING: Euler.setFromQuaternion() given unsupported order: ' + order )
 
-		if ( update !== false ) this._updateQuaternion();
+      }
 
-		return this;
+      this._order = order;
 
-	},
+      if ( update !== false ) this._updateQuaternion();
+
+      return this;
+    }
+	}(),
 
 	reorder: function () {
 
