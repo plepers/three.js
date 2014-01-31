@@ -135,13 +135,17 @@ THREE.Object3D.prototype = {
 
       this.matrix.copy( matrix );
 
-      this.position.getPositionFromMatrix( matrix );
+      if( this.matrixAutoUpdate ) {
 
-      this.scale.getScaleFromMatrix( matrix );
+        this.position.getPositionFromMatrix( matrix );
 
-      m1.extractRotation( matrix );
+        this.scale.getScaleFromMatrix( matrix );
 
-      this.quaternion.setFromRotationMatrix( m1 );
+        m1.extractRotation( matrix );
+
+        this.quaternion.setFromRotationMatrix( m1 );
+
+      }
 
       this.matrixWorldNeedsUpdate = true;
 
