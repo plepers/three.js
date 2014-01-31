@@ -144,6 +144,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 	_currentHeight = 0,
 
 	_enabledAttributes = {},
+	_enabledAttrPool = [],
 
 	// frustum
 
@@ -2520,10 +2521,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 		if ( material.visible === false ) return;
 
 		var linewidth, a, attribute;
+    var j, jl;
 		var attributeItem, attributeName, attributePointer, attributeSize;
 
 		var program = setProgram( camera, lights, fog, material, object );
 
+		var programIdentifiers = program.identifiers;
 		var programAttributes = program.attributes;
 		var geometryAttributes = geometry.attributes;
 
@@ -2578,7 +2581,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 					if ( updateBuffers ) {
 
-						for ( attributeName in programAttributes ) {
+						for ( j = 0, jl = programIdentifiers.length; j < jl; j++ ) {
+              attributeName = programIdentifiers[j];
 
 							attributePointer = programAttributes[ attributeName ];
 							attributeItem = geometryAttributes[ attributeName ];
@@ -2632,7 +2636,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				if ( updateBuffers ) {
 
-					for ( attributeName in programAttributes ) {
+          for ( j = 0, jl = programIdentifiers.length; j < jl; j++ ) {
+            attributeName = programIdentifiers[j];
 
 						if ( attributeName === 'index') continue;
 
@@ -2686,7 +2691,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			if ( updateBuffers ) {
 
-				for ( attributeName in programAttributes ) {
+        for ( j = 0, jl = programIdentifiers.length; j < jl; j++ ) {
+          attributeName = programIdentifiers[j];
 
 					attributePointer = programAttributes[ attributeName ];
 					attributeItem = geometryAttributes[ attributeName ];
@@ -2733,7 +2739,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			if ( updateBuffers ) {
 
-				for ( attributeName in programAttributes ) {
+        for ( j = 0, jl = programIdentifiers.length; j < jl; j++ ) {
+          attributeName = programIdentifiers[j];
 
 					attributePointer = programAttributes[ attributeName ];
 					attributeItem = geometryAttributes[ attributeName ];
@@ -3011,28 +3018,28 @@ THREE.WebGLRenderer = function ( parameters ) {
 	};
 
 	function enableAttribute( attribute ) {
+    var attr = _enabledAttributes[ attribute ]
 
-		if ( ! _enabledAttributes[ attribute ] ) {
-
-			_gl.enableVertexAttribArray( attribute );
+		if ( attr !== true ) {
+      _enabledAttrPool.push( attribute );
 			_enabledAttributes[ attribute ] = true;
+			_gl.enableVertexAttribArray( attribute );
 
 		}
 
 	};
 
 	function disableAttributes() {
+    var attribute;
+		for ( var i = 0, il = _enabledAttrPool.length; i < il; i++ ) {
+      attribute = _enabledAttrPool[i];
 
-		for ( var attribute in _enabledAttributes ) {
-
-			if ( _enabledAttributes[ attribute ] ) {
-
-				_gl.disableVertexAttribArray( attribute );
-				_enabledAttributes[ attribute ] = false;
-
-			}
+      _gl.disableVertexAttribArray( attribute );
+      _enabledAttributes[ attribute ] = false;
 
 		}
+
+    _enabledAttrPool.length = 0;
 
 	};
 
@@ -5826,6 +5833,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 	function cacheAttributeLocations ( program, identifiers ) {
 
 		var i, l, id;
+
+    program.identifiers = identifiers;
 
 		for( i = 0, l = identifiers.length; i < l; i ++ ) {
 
