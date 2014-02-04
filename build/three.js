@@ -19663,7 +19663,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 	_alpha = parameters.alpha !== undefined ? parameters.alpha : false,
 	_premultipliedAlpha = parameters.premultipliedAlpha !== undefined ? parameters.premultipliedAlpha : true,
 	_antialias = parameters.antialias !== undefined ? parameters.antialias : false,
-	_stencil = parameters.stencil !== undefined ? parameters.stencil : true,
+  _stencil = parameters.stencil !== undefined ? parameters.stencil : true,
+  _depth = parameters.depth !== undefined ? parameters.depth : true,
 	_preserveDrawingBuffer = parameters.preserveDrawingBuffer !== undefined ? parameters.preserveDrawingBuffer : false,
 
 	_clearColor = new THREE.Color( 0x000000 ),
@@ -25283,22 +25284,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				"attribute vec3 morphTarget0;",
 				"attribute vec3 morphTarget1;",
-				"attribute vec3 morphTarget2;",
-				"attribute vec3 morphTarget3;",
 
 				"#ifdef USE_MORPHNORMALS",
 
 					"attribute vec3 morphNormal0;",
 					"attribute vec3 morphNormal1;",
-					"attribute vec3 morphNormal2;",
-					"attribute vec3 morphNormal3;",
-
-				"#else",
-
-					"attribute vec3 morphTarget4;",
-					"attribute vec3 morphTarget5;",
-					"attribute vec3 morphTarget6;",
-					"attribute vec3 morphTarget7;",
 
 				"#endif",
 
@@ -26208,6 +26198,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 				premultipliedAlpha: _premultipliedAlpha,
 				antialias: _antialias,
 				stencil: _stencil,
+				depth: _depth,
 				preserveDrawingBuffer: _preserveDrawingBuffer
 			};
 
