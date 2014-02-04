@@ -19836,10 +19836,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	// GPU capabilities
 
-	var _maxTextures = _gl.getParameter( _gl.MAX_TEXTURE_IMAGE_UNITS );
-	var _maxVertexTextures = _gl.getParameter( _gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS );
-	var _maxTextureSize = _gl.getParameter( _gl.MAX_TEXTURE_SIZE );
-	var _maxCubemapSize = _gl.getParameter( _gl.MAX_CUBE_MAP_TEXTURE_SIZE );
+	var _maxTextures            = _gl.getParameter( _gl.MAX_TEXTURE_IMAGE_UNITS );
+	var _maxVertexTextures      = _gl.getParameter( _gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS );
+	var _maxTextureSize         = _gl.getParameter( _gl.MAX_TEXTURE_SIZE );
+	var _maxCubemapSize         = _gl.getParameter( _gl.MAX_CUBE_MAP_TEXTURE_SIZE );
+	var _maxVertexUniformVector = _gl.getParameter( _gl.MAX_VERTEX_UNIFORM_VECTORS );
 
 	var _maxAnisotropy = _glExtensionTextureFilterAnisotropic ? _gl.getParameter( _glExtensionTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT ) : 0;
 
@@ -19935,6 +19936,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 	this.getPrecision = function () {
 
 		return _precision;
+
+	};
+
+  this.getMaxVertexUniformVector = function () {
+
+		return _maxVertexUniformVector;
 
 	};
 
@@ -26125,8 +26132,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 			//  - limit here is ANGLE's 254 max uniform vectors
 			//    (up to 54 should be safe)
 
-			var nVertexUniforms = _gl.getParameter( _gl.MAX_VERTEX_UNIFORM_VECTORS );
-			var nVertexMatrices = Math.floor( ( nVertexUniforms - 20 ) / 4 );
+			var nVertexMatrices = Math.floor( ( _maxVertexUniformVector - 20 ) / 4 );
 
 			var maxBones = nVertexMatrices;
 
