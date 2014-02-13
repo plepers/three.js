@@ -1090,6 +1090,8 @@ THREE.WebGLRenderer = function ( parameters ) {
       }
     }
 
+
+
 	};
 
 	// Buffer setting
@@ -2598,6 +2600,9 @@ THREE.WebGLRenderer = function ( parameters ) {
 							if ( attributePointer >= 0 ) {
 
 								if ( attributeItem ) {
+
+//                  if( attributeName == 'skinWeight' ||  attributeName == 'skinIndex' )
+//                    console.log(attributeItem);
 
 									attributeSize = attributeItem.itemSize;
 									_gl.bindBuffer( _gl.ARRAY_BUFFER, attributeItem.buffer );

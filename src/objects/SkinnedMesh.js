@@ -25,26 +25,10 @@ THREE.SkinnedMesh = function ( geometry, material, useVertexTexture ) {
 		for ( b = 0; b < this.geometry.bones.length; b ++ ) {
 
 			gbone = this.geometry.bones[ b ];
-
-			p = gbone.pos;
-			q = gbone.rotq;
-			s = gbone.scl;
-
 			bone = this.addBone();
-
 			bone.name = gbone.name;
-			bone.position.set( p[0], p[1], p[2] );
-			bone.quaternion.set( q[0], q[1], q[2], q[3] );
-		
-			if ( s !== undefined ) {
-
-				bone.scale.set( s[0], s[1], s[2] );
-
-			} else {
-
-				bone.scale.set( 1, 1, 1 );
-
-			}
+      bone.setMatrix(gbone.skinMatrix);
+      bone.skinMatrix = gbone.skinMatrix.clone();
 
 		}
 
@@ -183,7 +167,7 @@ THREE.SkinnedMesh.prototype.updateMatrixWorld = function () {
 
 				var inverse = new THREE.Matrix4();
 
-				inverse.getInverse( this.bones[ b ].skinMatrix );
+				inverse.copy( this.bones[ b ].skinMatrix );
 
 				this.boneInverses.push( inverse );
 
@@ -204,9 +188,14 @@ THREE.SkinnedMesh.prototype.updateMatrixWorld = function () {
 			offsetMatrix.multiplyMatrices( this.bones[ b ].skinMatrix, this.boneInverses[ b ] );
 			offsetMatrix.flattenToArrayOffset( this.boneMatrices, b * 16 );
 
+
 		}
 
-		if ( this.useVertexTexture ) {
+    //console.log( this.boneMatrices[2*16], this.boneMatrices[2*16+1], this.boneMatrices[2*16+2]);
+    //console.log( this.bones[ 2].skinMatrix.elements[12], this.bones[ 2].skinMatrix.elements[13], this.bones[ 2].skinMatrix.elements[14] );
+
+
+    if ( this.useVertexTexture ) {
 
 			this.boneTexture.needsUpdate = true;
 
@@ -217,6 +206,19 @@ THREE.SkinnedMesh.prototype.updateMatrixWorld = function () {
 }();
 
 THREE.SkinnedMesh.prototype.pose = function () {
+
+  this.boneInverses = [];
+  gbones =  this.geometry.bones
+
+  for ( var b = 0, bl = gbones.length; b < bl; b ++ ) {
+
+    var inverse = new THREE.Matrix4();
+
+    inverse.copy( gbones[ b ].skinMatrix );
+
+    this.boneInverses.push( inverse );
+
+  }
 
 	this.updateMatrixWorld( true );
 
