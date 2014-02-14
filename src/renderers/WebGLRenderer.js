@@ -3208,17 +3208,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 	// Sorting
 
 	function painterSortStable ( a, b ) {
-
-		if ( a.z !== b.z ) {
-
+    if (a.matid !== b.matid)
+      return a.matid - b.matid;
+		else if ( a.z !== b.z )
 			return b.z - a.z;
-
-		} else {
-
+		else
 			return a.id - b.id;
-
-		}
-
 	};
 
 	function numericalSort ( a, b ) {
@@ -3298,6 +3293,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 			object = webglObject.object;
 
 			webglObject.id = i;
+			webglObject.matid = object.material.id;
 			webglObject.render = false;
 
 			if ( object.visible ) {
