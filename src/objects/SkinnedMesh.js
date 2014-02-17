@@ -222,7 +222,7 @@ THREE.SkinnedMesh.prototype.pose = function () {
 
 	this.updateMatrixWorld( true );
 
-	this.normalizeSkinWeights();
+	//this.normalizeSkinWeights();
 
 };
 
