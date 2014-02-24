@@ -4404,14 +4404,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				refreshUniformsParticle( m_uniforms, material );
 
-			} else if ( material instanceof THREE.MeshPhongMaterial ) {
-
-				refreshUniformsPhong( m_uniforms, material );
-
-			} else if ( material instanceof THREE.MeshLambertMaterial ) {
-
-				refreshUniformsLambert( m_uniforms, material );
-
 			} else if ( material instanceof THREE.MeshDepthMaterial ) {
 
 				m_uniforms.mNear.value = camera.near;
@@ -4424,11 +4416,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			}
 
-			if ( object.receiveShadow && ! material._shadowPass ) {
-
-				refreshUniformsShadow( m_uniforms, lights );
-
-			}
 
 
       if ( material.customShader != null ) {
@@ -4632,11 +4619,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 //
 //		}
 
-		if ( material.wrapAround ) {
-
-			uniforms.wrapRGB.value.copy( material.wrapRGB );
-
-		}
+//		if ( material.wrapAround ) {
+//
+//			uniforms.wrapRGB.value.copy( material.wrapRGB );
+//
+//		}
 
 	};
 
