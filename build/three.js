@@ -24021,21 +24021,21 @@ THREE.WebGLRenderer = function ( parameters ) {
 			}
 
 
-
-			if ( material instanceof THREE.MeshPhongMaterial ||
-				 material instanceof THREE.MeshLambertMaterial ||
-				 material.lights ) {
-
-				if ( _lightsNeedUpdate ) {
-
-					setupLights( program, lights );
-					_lightsNeedUpdate = false;
-
-				}
-
-				refreshUniformsLights( m_uniforms, _lights );
-
-			}
+//
+//			if ( material instanceof THREE.MeshPhongMaterial ||
+//				 material instanceof THREE.MeshLambertMaterial ||
+//				 material.lights ) {
+//
+//				if ( _lightsNeedUpdate ) {
+//
+//					setupLights( program, lights );
+//					_lightsNeedUpdate = false;
+//
+//				}
+//
+//				refreshUniformsLights( m_uniforms, _lights );
+//
+//			}
 
 			if ( material instanceof THREE.MeshBasicMaterial ||
 				 material instanceof THREE.MeshLambertMaterial ||
@@ -24047,16 +24047,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			// refresh single material specific uniforms
 
-			if ( material instanceof THREE.LineBasicMaterial ) {
-
-				refreshUniformsLine( m_uniforms, material );
-
-			} else if ( material instanceof THREE.LineDashedMaterial ) {
-
-				refreshUniformsLine( m_uniforms, material );
-				refreshUniformsDash( m_uniforms, material );
-
-			} else if ( material instanceof THREE.ParticleSystemMaterial ) {
+			if ( material instanceof THREE.ParticleSystemMaterial ) {
 
 				refreshUniformsParticle( m_uniforms, material );
 
@@ -24271,22 +24262,22 @@ THREE.WebGLRenderer = function ( parameters ) {
 	};
 
 	function refreshUniformsPhong ( uniforms, material ) {
-
-		uniforms.shininess.value = material.shininess;
-
-		if ( _this.gammaInput ) {
-
-			uniforms.ambient.value.copyGammaToLinear( material.ambient );
-			uniforms.emissive.value.copyGammaToLinear( material.emissive );
-			uniforms.specular.value.copyGammaToLinear( material.specular );
-
-		} else {
-
-			uniforms.ambient.value = material.ambient;
-			uniforms.emissive.value = material.emissive;
-			uniforms.specular.value = material.specular;
-
-		}
+//
+//		uniforms.shininess.value = material.shininess;
+//
+//		if ( _this.gammaInput ) {
+//
+//			uniforms.ambient.value.copyGammaToLinear( material.ambient );
+//			uniforms.emissive.value.copyGammaToLinear( material.emissive );
+//			uniforms.specular.value.copyGammaToLinear( material.specular );
+//
+//		} else {
+//
+//			uniforms.ambient.value = material.ambient;
+//			uniforms.emissive.value = material.emissive;
+//			uniforms.specular.value = material.specular;
+//
+//		}
 
 		if ( material.wrapAround ) {
 
