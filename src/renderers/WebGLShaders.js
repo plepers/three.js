@@ -2069,31 +2069,31 @@ THREE.ShaderChunk = {
                     "float dy1 = 1.25 * yPixelOffset;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy0 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy0 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy0 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, 0.0 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, 0.0 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy1 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy1 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy1 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
 
                 "#elif defined( SHADOWMAP_TYPE_PCF_SOFT )",
@@ -2145,7 +2145,7 @@ THREE.ShaderChunk = {
                     "shadowValues.z = mix( shadowKernel[1][1], shadowKernel[1][0], fractionalCoord.y );",
                     "shadowValues.w = mix( shadowKernel[1][2], shadowKernel[1][1], fractionalCoord.y );",
 
-                    "shadow = dot( shadowValues, vec4( 1.0 ) );",
+                    "shadow = 1.0 - dot( shadowValues, vec4( 1.0 ) );",
 
 
                 "#else",

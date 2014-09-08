@@ -236,14 +236,11 @@ THREE.RGBA_S3TC_DXT1_Format = 2002;
 THREE.RGBA_S3TC_DXT3_Format = 2003;
 THREE.RGBA_S3TC_DXT5_Format = 2004;
 
-/*
 // Potential future PVRTC compressed texture formats
 THREE.RGB_PVRTC_4BPPV1_Format = 2100;
 THREE.RGB_PVRTC_2BPPV1_Format = 2101;
 THREE.RGBA_PVRTC_4BPPV1_Format = 2102;
 THREE.RGBA_PVRTC_2BPPV1_Format = 2103;
-*/
-
 /**
  * @author mrdoob / http://mrdoob.com/
  */
@@ -18511,31 +18508,31 @@ THREE.ShaderChunk = {
                     "float dy1 = 1.25 * yPixelOffset;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy0 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy0 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy0 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, 0.0 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, 0.0 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy1 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy1 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy1 ) ) );",
-                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
 
 
                 "#elif defined( SHADOWMAP_TYPE_PCF_SOFT )",
@@ -18587,7 +18584,7 @@ THREE.ShaderChunk = {
                     "shadowValues.z = mix( shadowKernel[1][1], shadowKernel[1][0], fractionalCoord.y );",
                     "shadowValues.w = mix( shadowKernel[1][2], shadowKernel[1][1], fractionalCoord.y );",
 
-                    "shadow = dot( shadowValues, vec4( 1.0 ) );",
+                    "shadow = 1.0 - dot( shadowValues, vec4( 1.0 ) );",
 
 
                 "#else",
@@ -20383,6 +20380,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 	var _glExtensionStandardDerivatives;
 	var _glExtensionTextureFilterAnisotropic;
 	var _glExtensionCompressedTextureS3TC;
+	var _glExtensionCompressedTexturePVRTC;
 
 	initGL();
 
@@ -20477,11 +20475,18 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	};
 
-	this.supportsCompressedTextureS3TC = function () {
+  this.supportsCompressedTextureS3TC = function () {
 
-		return _glExtensionCompressedTextureS3TC;
+    return _glExtensionCompressedTextureS3TC;
 
-	};
+  };
+
+
+  this.supportsCompressedTexturePVRTC = function () {
+
+    return _glExtensionCompressedTexturePVRTC;
+
+  };
 
 	this.getMaxAnisotropy  = function () {
 
@@ -26639,6 +26644,14 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
+    if( _glExtensionCompressedTexturePVRTC !== undefined ) {
+
+      if ( p === THREE.RGB_PVRTC_4BPPV1_Format  ) return _glExtensionCompressedTexturePVRTC.COMPRESSED_RGB_PVRTC_4BPPV1_IMG  ;
+      if ( p === THREE.RGB_PVRTC_2BPPV1_Format  ) return _glExtensionCompressedTexturePVRTC.COMPRESSED_RGB_PVRTC_2BPPV1_IMG  ;
+      if ( p === THREE.RGBA_PVRTC_4BPPV1_Format ) return _glExtensionCompressedTexturePVRTC.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG ;
+      if ( p === THREE.RGBA_PVRTC_2BPPV1_Format ) return _glExtensionCompressedTexturePVRTC.COMPRESSED_RGBA_PVRTC_2BPPV1_IMG ;
+
+    }
 		return 0;
 
 	};
@@ -26762,6 +26775,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 		_glExtensionTextureFilterAnisotropic = _gl.getExtension( 'EXT_texture_filter_anisotropic' ) || _gl.getExtension( 'MOZ_EXT_texture_filter_anisotropic' ) || _gl.getExtension( 'WEBKIT_EXT_texture_filter_anisotropic' );
 
 		_glExtensionCompressedTextureS3TC = _gl.getExtension( 'WEBGL_compressed_texture_s3tc' ) || _gl.getExtension( 'MOZ_WEBGL_compressed_texture_s3tc' ) || _gl.getExtension( 'WEBKIT_WEBGL_compressed_texture_s3tc' );
+    _glExtensionCompressedTexturePVRTC = _gl.getExtension( 'WEBGL_compressed_texture_pvrtc' ) || _gl.getExtension( 'MOZ_WEBGL_compressed_texture_pvrtc' ) || _gl.getExtension( 'WEBKIT_WEBGL_compressed_texture_pvrtc' );
 
 		if ( ! _glExtensionTextureFloat ) {
 
@@ -26784,6 +26798,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 		if ( ! _glExtensionCompressedTextureS3TC ) {
 
 			console.log( 'THREE.WebGLRenderer: S3TC compressed textures not supported.' );
+
+		}
+		if ( ! _glExtensionCompressedTexturePVRTC ) {
+
+			console.log( 'THREE.WebGLRenderer: PVRTC compressed textures not supported.' );
 
 		}
 
@@ -27417,7 +27436,9 @@ THREE.ImageUtils = {
 
 	},
 
-	loadCompressedTexture: function ( url, mapping, onLoad, onError ) {
+	loadCompressedTexture: function ( url, mapping, onLoad, onError, format ) {
+
+    if( format == undefined ) format = 'dds'
 
 		var texture = new THREE.CompressedTexture();
 		texture.mapping = mapping;
@@ -27427,7 +27448,15 @@ THREE.ImageUtils = {
 		request.onload = function () {
 
 			var buffer = request.response;
-			var dds = THREE.ImageUtils.parseDDS( buffer, true );
+
+      if( format == 'dds' )
+			  var dds = THREE.ImageUtils.parseDDS( buffer, true );
+
+      else if( format == 'pvr')
+			  var dds = THREE.ImageUtils.parsePVR( buffer, true );
+
+      else
+        throw new Error( 'unsuported compressed format '+format );
 
 			texture.format = dds.format;
 
@@ -27914,6 +27943,129 @@ THREE.ImageUtils = {
 		return dds;
 
 	},
+
+  parsePVR: function( buffer, loadMipmaps ){
+
+    var pvr = { mipmaps: [], width: 0, height: 0, format: null, mipmapCount: 1 };
+
+
+    var headerLengthInt = 13;
+
+    var header = new Uint32Array( buffer, 0, headerLengthInt );
+
+
+    // texturetool format
+    var headerLength  =  header[0],
+        height        =  header[1],
+        width         =  header[2],
+        numMipmaps    =  header[3],
+        flags         =  header[4],
+        dataLength    =  header[5],
+        bpp           =  header[6],
+        bitmaskRed    =  header[7],
+        bitmaskGreen  =  header[8],
+        bitmaskBlue   =  header[9],
+        bitmaskAlpha  =  header[10],
+        pvrTag        =  header[11],
+        numSurfs      =  header[12]
+
+
+
+    var PVR_TEXTURE_FLAG_TYPE_MASK = 0xff
+    var PVRTextureFlagTypePVRTC_2 = 24,
+        PVRTextureFlagTypePVRTC_4 = 25
+
+    var formatFlags = flags & PVR_TEXTURE_FLAG_TYPE_MASK;
+
+    console.log( "headerLength ", headerLength);
+    console.log( "height       ", height      );
+    console.log( "width        ", width       );
+    console.log( "numMipmaps   ", numMipmaps  );
+    console.log( "flags        ", flags       );
+    console.log( "dataLength   ", dataLength  );
+    console.log( "bpp          ", bpp         );
+    console.log( "bitmaskRed   ", bitmaskRed  );
+    console.log( "bitmaskGreen ", bitmaskGreen);
+    console.log( "bitmaskBlue  ", bitmaskBlue );
+    console.log( "bitmaskAlpha ", bitmaskAlpha);
+    console.log( "pvrTag       ", pvrTag      );
+    console.log( "numSurfs     ", numSurfs    );
+
+
+    if (formatFlags == PVRTextureFlagTypePVRTC_4 || formatFlags == PVRTextureFlagTypePVRTC_2)
+    {
+
+      var _hasAlpha = bitmaskAlpha > 0;
+      // has alpha???
+
+      if (formatFlags == PVRTextureFlagTypePVRTC_4)
+        pvr.format = _hasAlpha ? THREE.RGBA_PVRTC_4BPPV1_Format : THREE.RGB_PVRTC_4BPPV1_Format;
+      else if (formatFlags == PVRTextureFlagTypePVRTC_2)
+        pvr.format = _hasAlpha ? THREE.RGBA_PVRTC_2BPPV1_Format : THREE.RGB_PVRTC_2BPPV1_Format;
+      else
+        throw new Error( "pvrtc - unknown format "+formatFlags)
+
+      pvr.width  = width
+      pvr.height = height
+
+
+      var dataOffset = headerLength,
+          dataSize = 0,
+          blockSize = 0,
+          widthBlocks = 0,
+          heightBlocks = 0,
+          bpp = 4;
+
+      dataLength += headerLength;
+
+      while (dataOffset < dataLength) {
+
+
+
+        if (formatFlags == PVRTextureFlagTypePVRTC_4)
+        {
+          blockSize = 4 * 4; // Pixel by pixel block size for 4bpp
+          widthBlocks = width / 4;
+          heightBlocks = height / 4;
+          bpp = 4;
+        }
+        else
+        {
+          blockSize = 8 * 4; // Pixel by pixel block size for 2bpp
+          widthBlocks = width / 8;
+          heightBlocks = height / 4;
+          bpp = 2;
+        }
+
+        // Clamp to minimum number of blocks
+        if (widthBlocks < 2)
+          widthBlocks = 2;
+        if (heightBlocks < 2)
+          heightBlocks = 2;
+
+
+        dataSize = widthBlocks * heightBlocks * ((blockSize  * bpp) / 8);
+
+        var byteArray = new Uint8Array( buffer, dataOffset, dataSize );
+
+        var mipmap = { "data": byteArray, "width": width, "height": height };
+        pvr.mipmaps.push( mipmap );
+
+        dataOffset += dataSize;
+
+        width = Math.max(width >> 1, 1);
+        height = Math.max(height >> 1, 1);
+
+        console.log ( "offset - length", dataOffset - dataLength )
+
+      }
+
+
+    }
+
+    return pvr;
+
+  },
 
 	getNormalMap: function ( image, depth ) {
 
