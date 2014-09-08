@@ -18188,7 +18188,560 @@ THREE.ShaderChunk = {
 
 	].join("\n"),
 
-	// ALPHATEST
+
+
+
+  skylight_pars_fragment: [
+
+    "uniform vec3 ambientLightColor;",
+
+    "#if MAX_DIR_LIGHTS > 0",
+
+      "uniform vec3 directionalLightColor[ MAX_DIR_LIGHTS ];",
+      "uniform vec3 directionalLightDirection[ MAX_DIR_LIGHTS ];",
+
+    "#endif",
+
+    "#if MAX_HEMI_LIGHTS > 0",
+
+      "uniform vec3 hemisphereLightSkyColor[ MAX_HEMI_LIGHTS ];",
+      "uniform vec3 hemisphereLightGroundColor[ MAX_HEMI_LIGHTS ];",
+      "uniform vec3 hemisphereLightDirection[ MAX_HEMI_LIGHTS ];",
+
+    "#endif",
+
+    "#if MAX_POINT_LIGHTS > 0",
+
+      "uniform vec3 pointLightColor[ MAX_POINT_LIGHTS ];",
+
+      "#ifdef PHONG_PER_PIXEL",
+
+        "uniform vec3 pointLightPosition[ MAX_POINT_LIGHTS ];",
+        "uniform float pointLightDistance[ MAX_POINT_LIGHTS ];",
+
+      "#else",
+
+        "varying vec4 vPointLight[ MAX_POINT_LIGHTS ];",
+
+      "#endif",
+
+    "#endif",
+
+    "#if MAX_SPOT_LIGHTS > 0",
+
+      "uniform vec3 spotLightColor[ MAX_SPOT_LIGHTS ];",
+      "uniform vec3 spotLightPosition[ MAX_SPOT_LIGHTS ];",
+      "uniform vec3 spotLightDirection[ MAX_SPOT_LIGHTS ];",
+      "uniform float spotLightAngleCos[ MAX_SPOT_LIGHTS ];",
+      "uniform float spotLightExponent[ MAX_SPOT_LIGHTS ];",
+
+      "#ifdef PHONG_PER_PIXEL",
+
+        "uniform float spotLightDistance[ MAX_SPOT_LIGHTS ];",
+
+      "#else",
+
+        "varying vec4 vSpotLight[ MAX_SPOT_LIGHTS ];",
+
+      "#endif",
+
+    "#endif",
+
+    "#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( NEED_WORLD_POS )",
+
+      "varying vec3 vWorldPosition;",
+
+    "#endif",
+
+    "#ifdef WRAP_AROUND",
+
+      "uniform vec3 wrapRGB;",
+
+    "#endif",
+
+    "varying vec3 vViewPosition;",
+    "varying vec3 vNormal;"
+
+  ].join("\n"),
+
+  skylight_fragment: [
+
+    "vec3 normal = normalize( vNormal );",
+    "vec3 viewPosition = normalize( vViewPosition );",
+
+    "#ifdef DOUBLE_SIDED",
+
+      "normal = normal * ( -1.0 + 2.0 * float( gl_FrontFacing ) );",
+
+    "#endif",
+
+    "#ifdef USE_NORMALMAP",
+
+      "normal = perturbNormal2Arb( -vViewPosition, normal );",
+
+    "#elif defined( USE_BUMPMAP )",
+
+      "normal = perturbNormalArb( -vViewPosition, normal, dHdxy_fwd() );",
+
+    "#endif",
+
+    "#if MAX_POINT_LIGHTS > 0",
+
+      "vec3 pointDiffuse  = vec3( 0.0 );",
+      "vec3 pointSpecular = vec3( 0.0 );",
+
+      "for ( int i = 0; i < MAX_POINT_LIGHTS; i ++ ) {",
+
+        "#ifdef PHONG_PER_PIXEL",
+
+          "vec4 lPosition = viewMatrix * vec4( pointLightPosition[ i ], 1.0 );",
+          "vec3 lVector = lPosition.xyz + vViewPosition.xyz;",
+
+          "float lDistance = 1.0;",
+          "if ( pointLightDistance[ i ] > 0.0 )",
+          "lDistance = 1.0 - min( ( length( lVector ) / pointLightDistance[ i ] ), 1.0 );",
+
+          "lVector = normalize( lVector );",
+
+        "#else",
+
+          "vec3 lVector = normalize( vPointLight[ i ].xyz );",
+          "float lDistance = vPointLight[ i ].w;",
+
+        "#endif",
+
+        // diffuse
+
+        "float dotProduct = dot( normal, lVector );",
+
+        "#ifdef WRAP_AROUND",
+
+          "float pointDiffuseWeightFull = max( dotProduct, 0.0 );",
+          "float pointDiffuseWeightHalf = max( 0.5 * dotProduct + 0.5, 0.0 );",
+
+          "vec3 pointDiffuseWeight = mix( vec3 ( pointDiffuseWeightFull ), vec3( pointDiffuseWeightHalf ), wrapRGB );",
+
+        "#else",
+
+          "float pointDiffuseWeight = max( dotProduct, 0.0 );",
+
+        "#endif",
+
+        "pointDiffuse  += diffuse * pointLightColor[ i ] * pointDiffuseWeight * lDistance;",
+
+        // specular
+
+        "vec3 pointHalfVector = normalize( lVector + viewPosition );",
+        "float pointDotNormalHalf = max( dot( normal, pointHalfVector ), 0.0 );",
+        "float pointSpecularWeight = specularStrength * max( pow( pointDotNormalHalf, shininess ), 0.0 );",
+
+        "#ifdef PHYSICALLY_BASED_SHADING",
+
+        // 2.0 => 2.0001 is hack to work around ANGLE bug
+
+          "float specularNormalization = ( shininess + 2.0001 ) / 8.0;",
+
+          "vec3 schlick = specular + vec3( 1.0 - specular ) * pow( 1.0 - dot( lVector, pointHalfVector ), 5.0 );",
+          "pointSpecular += schlick * pointLightColor[ i ] * pointSpecularWeight * pointDiffuseWeight * lDistance * specularNormalization;",
+
+        "#else",
+
+          "pointSpecular += specular * pointLightColor[ i ] * pointSpecularWeight * pointDiffuseWeight * lDistance;",
+
+        "#endif",
+
+      "}",
+
+    "#endif",
+
+    "#if MAX_SPOT_LIGHTS > 0",
+
+      "vec3 spotDiffuse  = vec3( 0.0 );",
+      "vec3 spotSpecular = vec3( 0.0 );",
+
+      "for ( int i = 0; i < MAX_SPOT_LIGHTS; i ++ ) {",
+
+        "#ifdef PHONG_PER_PIXEL",
+
+          "vec4 lPosition = viewMatrix * vec4( spotLightPosition[ i ], 1.0 );",
+          "vec3 lVector = lPosition.xyz + vViewPosition.xyz;",
+
+          "float lDistance = 1.0;",
+          "if ( spotLightDistance[ i ] > 0.0 )",
+          "lDistance = 1.0 - min( ( length( lVector ) / spotLightDistance[ i ] ), 1.0 );",
+
+          "lVector = normalize( lVector );",
+
+        "#else",
+
+          "vec3 lVector = normalize( vSpotLight[ i ].xyz );",
+          "float lDistance = vSpotLight[ i ].w;",
+
+        "#endif",
+
+        "float spotEffect = dot( spotLightDirection[ i ], normalize( spotLightPosition[ i ] - vWorldPosition ) );",
+
+        "if ( spotEffect > spotLightAngleCos[ i ] ) {",
+
+          "spotEffect = max( pow( spotEffect, spotLightExponent[ i ] ), 0.0 );",
+
+          // diffuse
+
+          "float dotProduct = dot( normal, lVector );",
+
+          "#ifdef WRAP_AROUND",
+
+            "float spotDiffuseWeightFull = max( dotProduct, 0.0 );",
+            "float spotDiffuseWeightHalf = max( 0.5 * dotProduct + 0.5, 0.0 );",
+
+            "vec3 spotDiffuseWeight = mix( vec3 ( spotDiffuseWeightFull ), vec3( spotDiffuseWeightHalf ), wrapRGB );",
+
+          "#else",
+
+            "float spotDiffuseWeight = max( dotProduct, 0.0 );",
+
+          "#endif",
+
+          "spotDiffuse += diffuse * spotLightColor[ i ] * spotDiffuseWeight * lDistance * spotEffect;",
+
+          // specular
+
+          "vec3 spotHalfVector = normalize( lVector + viewPosition );",
+          "float spotDotNormalHalf = max( dot( normal, spotHalfVector ), 0.0 );",
+          "float spotSpecularWeight = specularStrength * max( pow( spotDotNormalHalf, shininess ), 0.0 );",
+
+          "#ifdef PHYSICALLY_BASED_SHADING",
+
+          // 2.0 => 2.0001 is hack to work around ANGLE bug
+
+            "float specularNormalization = ( shininess + 2.0001 ) / 8.0;",
+
+            "vec3 schlick = specular + vec3( 1.0 - specular ) * pow( 1.0 - dot( lVector, spotHalfVector ), 5.0 );",
+            "spotSpecular += schlick * spotLightColor[ i ] * spotSpecularWeight * spotDiffuseWeight * lDistance * specularNormalization * spotEffect;",
+
+          "#else",
+
+            "spotSpecular += specular * spotLightColor[ i ] * spotSpecularWeight * spotDiffuseWeight * lDistance * spotEffect;",
+
+          "#endif",
+
+        "}",
+
+      "}",
+
+    "#endif",
+
+    "#if MAX_DIR_LIGHTS > 0",
+
+      "vec3 dirDiffuse  = vec3( 0.0 );",
+      "vec3 dirSpecular = vec3( 0.0 );" ,
+
+      "for( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {",
+
+        "vec4 lDirection = viewMatrix * vec4( directionalLightDirection[ i ], 0.0 );",
+        "vec3 dirVector = normalize( lDirection.xyz );",
+
+        // diffuse
+
+        "float dotProduct = dot( normal, dirVector );",
+
+        "#ifdef WRAP_AROUND",
+
+          "float dirDiffuseWeightFull = max( dotProduct, 0.0 );",
+          "float dirDiffuseWeightHalf = max( 0.5 * dotProduct + 0.5, 0.0 );",
+
+          "vec3 dirDiffuseWeight = mix( vec3( dirDiffuseWeightFull ), vec3( dirDiffuseWeightHalf ), wrapRGB );",
+
+        "#else",
+
+          "float dirDiffuseWeight = max( dotProduct, 0.0 );",
+
+        "#endif",
+
+
+
+        //
+        // cancel light if in shadow
+        //
+
+
+        "#ifdef USE_SHADOWMAP",
+
+
+            "float fDepth;",
+
+            "vec3 shadowCoord = vShadowCoord[ i ].xyz / vShadowCoord[ i ].w;",
+
+            // "if ( something && something )"          breaks ATI OpenGL shader compiler
+            // "if ( all( something, something ) )"  using this instead
+
+            "bvec4 inFrustumVec = bvec4 ( shadowCoord.x >= 0.0, shadowCoord.x <= 1.0, shadowCoord.y >= 0.0, shadowCoord.y <= 1.0 );",
+            "bool inFrustum = all( inFrustumVec );",
+
+            // don't shadow pixels outside of light frustum
+            // use just first frustum (for cascades)
+            // don't shadow pixels behind far plane of light frustum
+
+
+            "bvec2 frustumTestVec = bvec2( inFrustum, shadowCoord.z <= 1.0 );",
+
+
+            "bool frustumTest = all( frustumTestVec );",
+
+            "if ( frustumTest ) {",
+
+                "shadowCoord.z += shadowBias[ i ];",
+                "float shadow = 0.0;",
+
+                "#if defined( SHADOWMAP_TYPE_PCF )",
+
+                    // Percentage-close filtering
+                    // (9 pixel kernel)
+                    // http://fabiensanglard.net/shadowmappingPCF/
+
+
+                    "const float shadowDelta = 1.0 / 9.0;",
+
+                    "float xPixelOffset = 1.0 / shadowMapSize[ i ].x;",
+                    "float yPixelOffset = 1.0 / shadowMapSize[ i ].y;",
+
+                    "float dx0 = -1.25 * xPixelOffset;",
+                    "float dy0 = -1.25 * yPixelOffset;",
+                    "float dx1 = 1.25 * xPixelOffset;",
+                    "float dy1 = 1.25 * yPixelOffset;",
+
+                    "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy0 ) ) );",
+                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+                    "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy0 ) ) );",
+                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+                    "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy0 ) ) );",
+                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+                    "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, 0.0 ) ) );",
+                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+                    "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy ) );",
+                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+                    "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, 0.0 ) ) );",
+                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+                    "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy1 ) ) );",
+                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+                    "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy1 ) ) );",
+                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+                    "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy1 ) ) );",
+                    "if ( fDepth < shadowCoord.z ) shadow += shadowDelta;",
+
+
+                "#elif defined( SHADOWMAP_TYPE_PCF_SOFT )",
+
+                    // Percentage-close filtering
+                    // (9 pixel kernel)
+                    // http://fabiensanglard.net/shadowmappingPCF/
+
+
+                    "float xPixelOffset = 1.0 / shadowMapSize[ i ].x;",
+                    "float yPixelOffset = 1.0 / shadowMapSize[ i ].y;",
+
+                    "float dx0 = -1.0 * xPixelOffset;",
+                    "float dy0 = -1.0 * yPixelOffset;",
+                    "float dx1 = 1.0 * xPixelOffset;",
+                    "float dy1 = 1.0 * yPixelOffset;",
+
+                    "mat3 shadowKernel;",
+                    "mat3 depthKernel;",
+
+                    "depthKernel[0][0] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy0 ) ) );",
+                    "depthKernel[0][1] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, 0.0 ) ) );",
+                    "depthKernel[0][2] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy1 ) ) );",
+                    "depthKernel[1][0] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy0 ) ) );",
+                    "depthKernel[1][1] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy ) );",
+                    "depthKernel[1][2] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy1 ) ) );",
+                    "depthKernel[2][0] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy0 ) ) );",
+                    "depthKernel[2][1] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, 0.0 ) ) );",
+                    "depthKernel[2][2] = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy1 ) ) );",
+
+                    "vec3 shadowZ = vec3( shadowCoord.z );",
+                    "shadowKernel[0] = vec3(lessThan(depthKernel[0], shadowZ ));",
+                    "shadowKernel[0] *= vec3(0.25);",
+
+                    "shadowKernel[1] = vec3(lessThan(depthKernel[1], shadowZ ));",
+                    "shadowKernel[1] *= vec3(0.25);",
+
+                    "shadowKernel[2] = vec3(lessThan(depthKernel[2], shadowZ ));",
+                    "shadowKernel[2] *= vec3(0.25);",
+
+                    "vec2 fractionalCoord = 1.0 - fract( shadowCoord.xy * shadowMapSize[i].xy );",
+
+                    "shadowKernel[0] = mix( shadowKernel[1], shadowKernel[0], fractionalCoord.x );",
+                    "shadowKernel[1] = mix( shadowKernel[2], shadowKernel[1], fractionalCoord.x );",
+
+                    "vec4 shadowValues;",
+                    "shadowValues.x = mix( shadowKernel[0][1], shadowKernel[0][0], fractionalCoord.y );",
+                    "shadowValues.y = mix( shadowKernel[0][2], shadowKernel[0][1], fractionalCoord.y );",
+                    "shadowValues.z = mix( shadowKernel[1][1], shadowKernel[1][0], fractionalCoord.y );",
+                    "shadowValues.w = mix( shadowKernel[1][2], shadowKernel[1][1], fractionalCoord.y );",
+
+                    "shadow = dot( shadowValues, vec4( 1.0 ) );",
+
+
+                "#else",
+
+                    "vec4 rgbaDepth = texture2D( shadowMap[ i ], shadowCoord.xy );",
+                    "float fDepth = unpackDepth( rgbaDepth );",
+
+                    "if ( fDepth > shadowCoord.z )",
+                        "shadow = 1.0;",
+
+
+
+                "#endif",
+
+
+                "dirDiffuseWeight *= shadow;",
+
+            "}",
+
+
+        "#endif",
+
+
+
+
+        "dirDiffuse  += diffuse * directionalLightColor[ i ] * dirDiffuseWeight;",
+
+        // specular
+
+        "vec3 dirHalfVector = normalize( dirVector + viewPosition );",
+        "float dirDotNormalHalf = max( dot( normal, dirHalfVector ), 0.0 );",
+        "float dirSpecularWeight = specularStrength * max( pow( dirDotNormalHalf, shininess ), 0.0 );",
+
+        "#ifdef PHYSICALLY_BASED_SHADING",
+
+          "float specularNormalization = ( shininess + 2.0001 ) / 8.0;",
+
+          //"dirSpecular += specular * directionalLightColor[ i ] * dirSpecularWeight * dirDiffuseWeight * specularNormalization * fresnel;",
+
+          "vec3 schlick = specular + vec3( 1.0 - specular ) * pow( 1.0 - dot( dirVector, dirHalfVector ), 5.0 );",
+          "dirSpecular += schlick * directionalLightColor[ i ] * dirSpecularWeight * dirDiffuseWeight * specularNormalization;",
+
+        "#else",
+
+          "dirSpecular += specular * directionalLightColor[ i ] * dirSpecularWeight * dirDiffuseWeight;",
+
+        "#endif",
+
+      "}",
+
+    "#endif",
+
+    "#if MAX_HEMI_LIGHTS > 0",
+
+    "vec3 hemiDiffuse  = vec3( 0.0 );",
+    "vec3 hemiSpecular = vec3( 0.0 );" ,
+
+    "for( int i = 0; i < MAX_HEMI_LIGHTS; i ++ ) {",
+
+    "vec4 lDirection = viewMatrix * vec4( hemisphereLightDirection[ i ], 0.0 );",
+    "vec3 lVector = normalize( lDirection.xyz );",
+
+    // diffuse
+
+    "float dotProduct = dot( normal, lVector );",
+    "float hemiDiffuseWeight = 0.5 * dotProduct + 0.5;",
+
+    "vec3 hemiColor = mix( hemisphereLightGroundColor[ i ], hemisphereLightSkyColor[ i ], hemiDiffuseWeight );",
+
+    "hemiDiffuse += diffuse * hemiColor;",
+
+    // specular (sky light)
+
+    "vec3 hemiHalfVectorSky = normalize( lVector + viewPosition );",
+    "float hemiDotNormalHalfSky = 0.5 * dot( normal, hemiHalfVectorSky ) + 0.5;",
+    "float hemiSpecularWeightSky = specularStrength * max( pow( hemiDotNormalHalfSky, shininess ), 0.0 );",
+
+    // specular (ground light)
+
+    "vec3 lVectorGround = -lVector;",
+
+    "vec3 hemiHalfVectorGround = normalize( lVectorGround + viewPosition );",
+    "float hemiDotNormalHalfGround = 0.5 * dot( normal, hemiHalfVectorGround ) + 0.5;",
+    "float hemiSpecularWeightGround = specularStrength * max( pow( hemiDotNormalHalfGround, shininess ), 0.0 );",
+
+    "#ifdef PHYSICALLY_BASED_SHADING",
+
+    "float dotProductGround = dot( normal, lVectorGround );",
+
+    // 2.0 => 2.0001 is hack to work around ANGLE bug
+
+    "float specularNormalization = ( shininess + 2.0001 ) / 8.0;",
+
+    "vec3 schlickSky = specular + vec3( 1.0 - specular ) * pow( 1.0 - dot( lVector, hemiHalfVectorSky ), 5.0 );",
+    "vec3 schlickGround = specular + vec3( 1.0 - specular ) * pow( 1.0 - dot( lVectorGround, hemiHalfVectorGround ), 5.0 );",
+    "hemiSpecular += hemiColor * specularNormalization * ( schlickSky * hemiSpecularWeightSky * max( dotProduct, 0.0 ) + schlickGround * hemiSpecularWeightGround * max( dotProductGround, 0.0 ) );",
+
+    "#else",
+
+    "hemiSpecular += specular * hemiColor * ( hemiSpecularWeightSky + hemiSpecularWeightGround ) * hemiDiffuseWeight;",
+
+    "#endif",
+
+    "}",
+
+    "#endif",
+
+    "vec3 totalDiffuse = vec3( 0.0 );",
+    "vec3 totalSpecular = vec3( 0.0 );",
+
+    "#if MAX_DIR_LIGHTS > 0",
+
+    "totalDiffuse += dirDiffuse;",
+    "totalSpecular += dirSpecular;",
+
+    "#endif",
+
+    "#if MAX_HEMI_LIGHTS > 0",
+
+    "totalDiffuse += hemiDiffuse;",
+    "totalSpecular += hemiSpecular;",
+
+    "#endif",
+
+    "#if MAX_POINT_LIGHTS > 0",
+
+    "totalDiffuse += pointDiffuse;",
+    "totalSpecular += pointSpecular;",
+
+    "#endif",
+
+    "#if MAX_SPOT_LIGHTS > 0",
+
+    "totalDiffuse += spotDiffuse;",
+    "totalSpecular += spotSpecular;",
+
+    "#endif",
+
+    "#ifdef METAL",
+
+    "gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ambientLightColor * ambient + totalSpecular );",
+
+    "#else",
+
+    "gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ambientLightColor * ambient ) + totalSpecular;",
+
+    "#endif"
+
+  ].join("\n"),
+
+
+
+
+  // ALPHATEST
 
 	alphatest_fragment: [
 
@@ -18676,12 +19229,12 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "alphatest_fragment" ],
 				THREE.ShaderChunk[ "specularmap_fragment" ],
 
-				THREE.ShaderChunk[ "lights_phong_fragment" ],
+				THREE.ShaderChunk[ "skylight_fragment" ],
 
 				THREE.ShaderChunk[ "lightmap_fragment" ],
 				THREE.ShaderChunk[ "color_fragment" ],
 				THREE.ShaderChunk[ "envmap_fragment" ],
-				THREE.ShaderChunk[ "shadowmap_fragment" ],
+//				THREE.ShaderChunk[ "shadowmap_fragment" ],
 
 				THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
 
@@ -24021,21 +24574,21 @@ THREE.WebGLRenderer = function ( parameters ) {
 			}
 
 
-//
-//			if ( material instanceof THREE.MeshPhongMaterial ||
-//				 material instanceof THREE.MeshLambertMaterial ||
-//				 material.lights ) {
-//
-//				if ( _lightsNeedUpdate ) {
-//
-//					setupLights( program, lights );
-//					_lightsNeedUpdate = false;
-//
-//				}
-//
-//				refreshUniformsLights( m_uniforms, _lights );
-//
-//			}
+
+			if ( material instanceof THREE.MeshPhongMaterial ||
+				 material instanceof THREE.MeshLambertMaterial ||
+				 material.lights ) {
+
+				if ( _lightsNeedUpdate ) {
+
+					setupLights( program, lights );
+					_lightsNeedUpdate = false;
+
+				}
+
+				refreshUniformsLights( m_uniforms, _lights );
+
+			}
 
 			if ( material instanceof THREE.MeshBasicMaterial ||
 				 material instanceof THREE.MeshLambertMaterial ||
@@ -24063,6 +24616,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			}
 
+      if ( object.receiveShadow && ! material._shadowPass ) {
+
+        refreshUniformsShadow( m_uniforms, lights );
+
+      }
 
 
       if ( material.customShader != null ) {
@@ -35885,6 +36443,7 @@ THREE.ShadowMapPlugin = function () {
 			_gl.cullFace( _gl.BACK );
 
 		}
+			_gl.cullFace( _gl.BACK );
 
 		_renderer.setDepthTest( true );
 

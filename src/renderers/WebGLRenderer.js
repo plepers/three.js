@@ -4374,21 +4374,21 @@ THREE.WebGLRenderer = function ( parameters ) {
 			}
 
 
-//
-//			if ( material instanceof THREE.MeshPhongMaterial ||
-//				 material instanceof THREE.MeshLambertMaterial ||
-//				 material.lights ) {
-//
-//				if ( _lightsNeedUpdate ) {
-//
-//					setupLights( program, lights );
-//					_lightsNeedUpdate = false;
-//
-//				}
-//
-//				refreshUniformsLights( m_uniforms, _lights );
-//
-//			}
+
+			if ( material instanceof THREE.MeshPhongMaterial ||
+				 material instanceof THREE.MeshLambertMaterial ||
+				 material.lights ) {
+
+				if ( _lightsNeedUpdate ) {
+
+					setupLights( program, lights );
+					_lightsNeedUpdate = false;
+
+				}
+
+				refreshUniformsLights( m_uniforms, _lights );
+
+			}
 
 			if ( material instanceof THREE.MeshBasicMaterial ||
 				 material instanceof THREE.MeshLambertMaterial ||
@@ -4416,6 +4416,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			}
 
+      if ( object.receiveShadow && ! material._shadowPass ) {
+
+        refreshUniformsShadow( m_uniforms, lights );
+
+      }
 
 
       if ( material.customShader != null ) {

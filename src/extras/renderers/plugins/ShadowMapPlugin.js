@@ -75,6 +75,7 @@ THREE.ShadowMapPlugin = function () {
 			_gl.cullFace( _gl.BACK );
 
 		}
+			_gl.cullFace( _gl.BACK );
 
 		_renderer.setDepthTest( true );
 
