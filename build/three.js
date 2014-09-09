@@ -18178,6 +18178,7 @@ THREE.ShaderChunk = {
 			"for( int i = 0; i < MAX_SHADOWS; i ++ ) {",
 
 				"vShadowCoord[ i ] = shadowMatrix[ i ] * worldPosition;",
+        "vShadowCoord[ i ].xyz /= vShadowCoord[ i ].w;",
 
 			"}",
 
@@ -18467,25 +18468,11 @@ THREE.ShaderChunk = {
 
             "float fDepth;",
 
-            "vec3 shadowCoord = vShadowCoord[ i ].xyz / vShadowCoord[ i ].w;",
+            "vec3 shadowCoord = vShadowCoord[ i ].xyz;",
 
             // "if ( something && something )"          breaks ATI OpenGL shader compiler
             // "if ( all( something, something ) )"  using this instead
 
-            "bvec4 inFrustumVec = bvec4 ( shadowCoord.x >= 0.0, shadowCoord.x <= 1.0, shadowCoord.y >= 0.0, shadowCoord.y <= 1.0 );",
-            "bool inFrustum = all( inFrustumVec );",
-
-            // don't shadow pixels outside of light frustum
-            // use just first frustum (for cascades)
-            // don't shadow pixels behind far plane of light frustum
-
-
-            "bvec2 frustumTestVec = bvec2( inFrustum, shadowCoord.z <= 1.0 );",
-
-
-            "bool frustumTest = all( frustumTestVec );",
-
-            "if ( frustumTest ) {",
 
                 "shadowCoord.z += shadowBias[ i ];",
                 "float shadow = 0.0;",
@@ -18508,31 +18495,33 @@ THREE.ShaderChunk = {
                     "float dy1 = 1.25 * yPixelOffset;",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy0 ) ) );",
-                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
+                    "shadow += step( shadowCoord.z, fDepth );",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy0 ) ) );",
-                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
+                    "shadow += step( shadowCoord.z, fDepth );",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy0 ) ) );",
-                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
+                    "shadow += step( shadowCoord.z, fDepth );",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, 0.0 ) ) );",
-                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
+                    "shadow += step( shadowCoord.z, fDepth );",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy ) );",
-                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
+                    "shadow += step( shadowCoord.z, fDepth );",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, 0.0 ) ) );",
-                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
+                    "shadow += step( shadowCoord.z, fDepth );",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx0, dy1 ) ) );",
-                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
+                    "shadow += step( shadowCoord.z, fDepth );",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( 0.0, dy1 ) ) );",
-                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
+                    "shadow += step( shadowCoord.z, fDepth );",
 
                     "fDepth = unpackDepth( texture2D( shadowMap[ i ], shadowCoord.xy + vec2( dx1, dy1 ) ) );",
-                    "if ( fDepth > shadowCoord.z ) shadow += shadowDelta;",
+                    "shadow += step( shadowCoord.z, fDepth );",
+
+                    "shadow /= 9.0;",
 
 
                 "#elif defined( SHADOWMAP_TYPE_PCF_SOFT )",
@@ -18590,11 +18579,9 @@ THREE.ShaderChunk = {
                 "#else",
 
                     "vec4 rgbaDepth = texture2D( shadowMap[ i ], shadowCoord.xy );",
-                    "float fDepth = unpackDepth( rgbaDepth );",
+                    "fDepth = unpackDepth( rgbaDepth );",
 
-                    "if ( fDepth > shadowCoord.z )",
-                        "shadow = 1.0;",
-
+                    "shadow = step( shadowCoord.z, fDepth );",
 
 
                 "#endif",
@@ -18602,7 +18589,6 @@ THREE.ShaderChunk = {
 
                 "dirDiffuseWeight *= shadow;",
 
-            "}",
 
 
         "#endif",
