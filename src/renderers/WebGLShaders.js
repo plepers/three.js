@@ -269,6 +269,7 @@ THREE.ShaderChunk = {
 		"#ifdef USE_MAP",
 
 			"vec4 texelColor = texture2D( map, vUv );",
+			"texelColor.rgb = vec3( ( texelColor.r + texelColor.g + texelColor.b )/3.0 );",
 
 			"#ifdef GAMMA_INPUT",
 
