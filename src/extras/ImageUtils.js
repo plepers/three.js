@@ -570,19 +570,19 @@ THREE.ImageUtils = {
 
     var formatFlags = flags & PVR_TEXTURE_FLAG_TYPE_MASK;
 
-    console.log( "headerLength ", headerLength);
-    console.log( "height       ", height      );
-    console.log( "width        ", width       );
-    console.log( "numMipmaps   ", numMipmaps  );
-    console.log( "flags        ", flags       );
-    console.log( "dataLength   ", dataLength  );
-    console.log( "bpp          ", bpp         );
-    console.log( "bitmaskRed   ", bitmaskRed  );
-    console.log( "bitmaskGreen ", bitmaskGreen);
-    console.log( "bitmaskBlue  ", bitmaskBlue );
-    console.log( "bitmaskAlpha ", bitmaskAlpha);
-    console.log( "pvrTag       ", pvrTag      );
-    console.log( "numSurfs     ", numSurfs    );
+//    console.log( "headerLength ", headerLength);
+//    console.log( "height       ", height      );
+//    console.log( "width        ", width       );
+//    console.log( "numMipmaps   ", numMipmaps  );
+//    console.log( "flags        ", flags       );
+//    console.log( "dataLength   ", dataLength  );
+//    console.log( "bpp          ", bpp         );
+//    console.log( "bitmaskRed   ", bitmaskRed  );
+//    console.log( "bitmaskGreen ", bitmaskGreen);
+//    console.log( "bitmaskBlue  ", bitmaskBlue );
+//    console.log( "bitmaskAlpha ", bitmaskAlpha);
+//    console.log( "pvrTag       ", pvrTag      );
+//    console.log( "numSurfs     ", numSurfs    );
 
 
     if (formatFlags == PVRTextureFlagTypePVRTC_4 || formatFlags == PVRTextureFlagTypePVRTC_2)
@@ -648,8 +648,6 @@ THREE.ImageUtils = {
 
         width = Math.max(width >> 1, 1);
         height = Math.max(height >> 1, 1);
-
-        console.log ( "offset - length", dataOffset - dataLength )
 
       }
 

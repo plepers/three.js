@@ -75,7 +75,6 @@ THREE.ShadowMapPlugin = function () {
 			_gl.cullFace( _gl.BACK );
 
 		}
-			_gl.cullFace( _gl.BACK );
 
 		_renderer.setDepthTest( true );
 
@@ -282,15 +281,12 @@ THREE.ShadowMapPlugin = function () {
 					useSkinning = object instanceof THREE.SkinnedMesh && objectMaterial.skinning;
 
 					if ( object.customDepthMaterial ) {
-
 						material = object.customDepthMaterial;
 
 					} else if ( useSkinning ) {
-
 						material = useMorphing ? _depthMaterialMorphSkin : _depthMaterialSkin;
 
 					} else if ( useMorphing ) {
-
 						material = _depthMaterialMorph;
 
 					} else {

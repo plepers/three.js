@@ -4405,6 +4405,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 				refreshUniformsCommon( m_uniforms, material );
 
 			}
+			if (
+				 material instanceof THREE.MeshPhongMaterial ) {
+
+				refreshUniformsPhong( m_uniforms, material );
+
+			}
 
 			// refresh single material specific uniforms
 
@@ -4615,28 +4621,27 @@ THREE.WebGLRenderer = function ( parameters ) {
 	};
 
 	function refreshUniformsPhong ( uniforms, material ) {
-//
-//		uniforms.shininess.value = material.shininess;
-//
-//		if ( _this.gammaInput ) {
-//
-//			uniforms.ambient.value.copyGammaToLinear( material.ambient );
-//			uniforms.emissive.value.copyGammaToLinear( material.emissive );
-//			uniforms.specular.value.copyGammaToLinear( material.specular );
-//
-//		} else {
-//
-//			uniforms.ambient.value = material.ambient;
-//			uniforms.emissive.value = material.emissive;
-//			uniforms.specular.value = material.specular;
-//
-//		}
 
-//		if ( material.wrapAround ) {
-//
-//			uniforms.wrapRGB.value.copy( material.wrapRGB );
-//
-//		}
+		uniforms.shininess.value = material.shininess;
+
+		if ( _this.gammaInput ) {
+
+			uniforms.ambient.value.copyGammaToLinear( material.ambient );
+			uniforms.emissive.value.copyGammaToLinear( material.emissive );
+			uniforms.specular.value.copyGammaToLinear( material.specular );
+
+		} else {
+			uniforms.ambient.value = material.ambient;
+			uniforms.emissive.value = material.emissive;
+			uniforms.specular.value = material.specular;
+
+		}
+
+		if ( material.wrapAround ) {
+
+			uniforms.wrapRGB.value.copy( material.wrapRGB );
+
+		}
 
 	};
 

@@ -18434,8 +18434,9 @@ THREE.ShaderChunk = {
 
       "vec3 dirDiffuse  = vec3( 0.0 );",
       "vec3 dirSpecular = vec3( 0.0 );" ,
+      "const int i = 0;" ,
 
-      "for( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {",
+//      "for( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {",
 
         "vec4 lDirection = viewMatrix * vec4( directionalLightDirection[ i ], 0.0 );",
         "vec3 dirVector = normalize( lDirection.xyz );",
@@ -18620,7 +18621,7 @@ THREE.ShaderChunk = {
 
         "#endif",
 
-      "}",
+//      "}",
 
     "#endif",
 
@@ -20168,6 +20169,7 @@ THREE.ShaderLib = {
 			"void main() {",
 
 				"gl_FragData[ 0 ] = pack_depth( gl_FragCoord.z );",
+
 
 				//"gl_FragData[ 0 ] = pack_depth( gl_FragCoord.z / gl_FragCoord.w );",
 				//"float z = ( ( gl_FragCoord.z / gl_FragCoord.w ) - 3.0 ) / ( 4000.0 - 3.0 );",
@@ -24589,6 +24591,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 				refreshUniformsCommon( m_uniforms, material );
 
 			}
+			if (
+				 material instanceof THREE.MeshPhongMaterial ) {
+
+				refreshUniformsPhong( m_uniforms, material );
+
+			}
 
 			// refresh single material specific uniforms
 
@@ -24799,28 +24807,27 @@ THREE.WebGLRenderer = function ( parameters ) {
 	};
 
 	function refreshUniformsPhong ( uniforms, material ) {
-//
-//		uniforms.shininess.value = material.shininess;
-//
-//		if ( _this.gammaInput ) {
-//
-//			uniforms.ambient.value.copyGammaToLinear( material.ambient );
-//			uniforms.emissive.value.copyGammaToLinear( material.emissive );
-//			uniforms.specular.value.copyGammaToLinear( material.specular );
-//
-//		} else {
-//
-//			uniforms.ambient.value = material.ambient;
-//			uniforms.emissive.value = material.emissive;
-//			uniforms.specular.value = material.specular;
-//
-//		}
 
-//		if ( material.wrapAround ) {
-//
-//			uniforms.wrapRGB.value.copy( material.wrapRGB );
-//
-//		}
+		uniforms.shininess.value = material.shininess;
+
+		if ( _this.gammaInput ) {
+
+			uniforms.ambient.value.copyGammaToLinear( material.ambient );
+			uniforms.emissive.value.copyGammaToLinear( material.emissive );
+			uniforms.specular.value.copyGammaToLinear( material.specular );
+
+		} else {
+			uniforms.ambient.value = material.ambient;
+			uniforms.emissive.value = material.emissive;
+			uniforms.specular.value = material.specular;
+
+		}
+
+		if ( material.wrapAround ) {
+
+			uniforms.wrapRGB.value.copy( material.wrapRGB );
+
+		}
 
 	};
 
@@ -27964,19 +27971,19 @@ THREE.ImageUtils = {
 
     var formatFlags = flags & PVR_TEXTURE_FLAG_TYPE_MASK;
 
-    console.log( "headerLength ", headerLength);
-    console.log( "height       ", height      );
-    console.log( "width        ", width       );
-    console.log( "numMipmaps   ", numMipmaps  );
-    console.log( "flags        ", flags       );
-    console.log( "dataLength   ", dataLength  );
-    console.log( "bpp          ", bpp         );
-    console.log( "bitmaskRed   ", bitmaskRed  );
-    console.log( "bitmaskGreen ", bitmaskGreen);
-    console.log( "bitmaskBlue  ", bitmaskBlue );
-    console.log( "bitmaskAlpha ", bitmaskAlpha);
-    console.log( "pvrTag       ", pvrTag      );
-    console.log( "numSurfs     ", numSurfs    );
+//    console.log( "headerLength ", headerLength);
+//    console.log( "height       ", height      );
+//    console.log( "width        ", width       );
+//    console.log( "numMipmaps   ", numMipmaps  );
+//    console.log( "flags        ", flags       );
+//    console.log( "dataLength   ", dataLength  );
+//    console.log( "bpp          ", bpp         );
+//    console.log( "bitmaskRed   ", bitmaskRed  );
+//    console.log( "bitmaskGreen ", bitmaskGreen);
+//    console.log( "bitmaskBlue  ", bitmaskBlue );
+//    console.log( "bitmaskAlpha ", bitmaskAlpha);
+//    console.log( "pvrTag       ", pvrTag      );
+//    console.log( "numSurfs     ", numSurfs    );
 
 
     if (formatFlags == PVRTextureFlagTypePVRTC_4 || formatFlags == PVRTextureFlagTypePVRTC_2)
@@ -28042,8 +28049,6 @@ THREE.ImageUtils = {
 
         width = Math.max(width >> 1, 1);
         height = Math.max(height >> 1, 1);
-
-        console.log ( "offset - length", dataOffset - dataLength )
 
       }
 
@@ -36582,7 +36587,6 @@ THREE.ShadowMapPlugin = function () {
 			_gl.cullFace( _gl.BACK );
 
 		}
-			_gl.cullFace( _gl.BACK );
 
 		_renderer.setDepthTest( true );
 
@@ -36789,15 +36793,12 @@ THREE.ShadowMapPlugin = function () {
 					useSkinning = object instanceof THREE.SkinnedMesh && objectMaterial.skinning;
 
 					if ( object.customDepthMaterial ) {
-
 						material = object.customDepthMaterial;
 
 					} else if ( useSkinning ) {
-
 						material = useMorphing ? _depthMaterialMorphSkin : _depthMaterialSkin;
 
 					} else if ( useMorphing ) {
-
 						material = _depthMaterialMorph;
 
 					} else {

@@ -1995,8 +1995,9 @@ THREE.ShaderChunk = {
 
       "vec3 dirDiffuse  = vec3( 0.0 );",
       "vec3 dirSpecular = vec3( 0.0 );" ,
+      "const int i = 0;" ,
 
-      "for( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {",
+//      "for( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {",
 
         "vec4 lDirection = viewMatrix * vec4( directionalLightDirection[ i ], 0.0 );",
         "vec3 dirVector = normalize( lDirection.xyz );",
@@ -2181,7 +2182,7 @@ THREE.ShaderChunk = {
 
         "#endif",
 
-      "}",
+//      "}",
 
     "#endif",
 
@@ -3729,6 +3730,7 @@ THREE.ShaderLib = {
 			"void main() {",
 
 				"gl_FragData[ 0 ] = pack_depth( gl_FragCoord.z );",
+
 
 				//"gl_FragData[ 0 ] = pack_depth( gl_FragCoord.z / gl_FragCoord.w );",
 				//"float z = ( ( gl_FragCoord.z / gl_FragCoord.w ) - 3.0 ) / ( 4000.0 - 3.0 );",
