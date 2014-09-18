@@ -1025,8 +1025,7 @@ THREE.ShaderChunk = {
 
 			"for( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {",
 
-				"vec4 lDirection = viewMatrix * vec4( directionalLightDirection[ i ], 0.0 );",
-				"vec3 dirVector = normalize( lDirection.xyz );",
+				"vec3 dirVector = directionalLightDirection[ i ];",
 
 				// diffuse
 

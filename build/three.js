@@ -1633,21 +1633,38 @@ THREE.Vector3.prototype = {
 
 	},
 
-	applyMatrix4: function ( m ) {
+  applyMatrix4: function ( m ) {
 
-		// input: THREE.Matrix4 affine matrix
+    // input: THREE.Matrix4 affine matrix
 
-		var x = this.x, y = this.y, z = this.z;
+    var x = this.x, y = this.y, z = this.z;
 
-		var e = m.elements;
+    var e = m.elements;
 
-		this.x = e[0] * x + e[4] * y + e[8]  * z + e[12];
-		this.y = e[1] * x + e[5] * y + e[9]  * z + e[13];
-		this.z = e[2] * x + e[6] * y + e[10] * z + e[14];
+    this.x = e[0] * x + e[4] * y + e[8]  * z + e[12];
+    this.y = e[1] * x + e[5] * y + e[9]  * z + e[13];
+    this.z = e[2] * x + e[6] * y + e[10] * z + e[14];
 
-		return this;
+    return this;
 
-	},
+  },
+
+
+  applyMatrix43: function ( m ) {
+
+    // input: THREE.Matrix4 affine matrix
+
+    var x = this.x, y = this.y, z = this.z;
+
+    var e = m.elements;
+
+    this.x = e[0] * x + e[4] * y + e[8]  * z;
+    this.y = e[1] * x + e[5] * y + e[9]  * z;
+    this.z = e[2] * x + e[6] * y + e[10] * z;
+
+    return this;
+
+  },
 
 	applyProjection: function ( m ) {
 
@@ -17479,8 +17496,7 @@ THREE.ShaderChunk = {
 
 			"for( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {",
 
-				"vec4 lDirection = viewMatrix * vec4( directionalLightDirection[ i ], 0.0 );",
-				"vec3 dirVector = normalize( lDirection.xyz );",
+				"vec3 dirVector = directionalLightDirection[ i ];",
 
 				// diffuse
 
@@ -24594,7 +24610,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				if ( _lightsNeedUpdate ) {
 
-					setupLights( program, lights );
+					setupLights( program, lights, camera );
 					_lightsNeedUpdate = false;
 
 				}
@@ -25219,7 +25235,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	};
 
-	function setupLights ( program, lights ) {
+	function setupLights ( program, lights, camera ) {
 
 		var l, ll, light, n,
 		r = 0, g = 0, b = 0,
@@ -25300,12 +25316,15 @@ THREE.WebGLRenderer = function ( parameters ) {
 				_direction.getPositionFromMatrix( light.matrixWorld );
 				_vector3.getPositionFromMatrix( light.target.matrixWorld );
 				_direction.sub( _vector3 );
-				_direction.normalize();
 
 				// skip lights with undefined direction
 				// these create troubles in OpenGL (making pixel black)
 
 				if ( _direction.x === 0 && _direction.y === 0 && _direction.z === 0 ) continue;
+
+//        camera.matrixWorldInverse.multiplyVector3( _direction );
+        _direction.applyMatrix43( camera.matrixWorldInverse );
+				_direction.normalize();
 
 				dirOffset = dirLength * 3;
 
