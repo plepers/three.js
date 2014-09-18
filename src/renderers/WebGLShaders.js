@@ -1521,7 +1521,7 @@ THREE.ShaderChunk = {
 
 			"for( int i = 0; i < MAX_SHADOWS; i ++ ) {",
 
-				"vec3 shadowCoord = vShadowCoord[ i ].xyz / vShadowCoord[ i ].w;",
+				"vec3 shadowCoord = vShadowCoord[ i ].xyz;// / vShadowCoord[ i ].w;",
 
 				// "if ( something && something )" 		 breaks ATI OpenGL shader compiler
 				// "if ( all( something, something ) )"  using this instead

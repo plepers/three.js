@@ -46,6 +46,7 @@ THREE.ShadowMapPlugin = function () {
 
 	this.update = function ( scene, camera ) {
 
+
 		var i, il, j, jl, n,
 
 		shadowMap, shadowMatrix, shadowCamera,

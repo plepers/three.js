@@ -62,6 +62,10 @@ THREE.WebGLRenderer = function ( parameters ) {
 	this.shadowMapDebug = false;
 	this.shadowMapCascade = false;
 
+  //projectors
+  this.projectorEnabled = false;
+  this.projectorAutoUpdate = true;
+
 	// morphs
 
 	this.maxMorphTargets = 8;
@@ -4484,6 +4488,10 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
+    if ( material.customShader != null ) {
+      material.refreshObjectState(m_uniforms, object);
+    }
+
 		return program;
 
 	};
@@ -6655,7 +6663,9 @@ THREE.WebGLRenderer = function ( parameters ) {
 	// default plugins (order is important)
 
 	this.shadowMapPlugin = new THREE.ShadowMapPlugin();
+	this.projectorPlugin = new THREE.ProjectorPlugin();
 	this.addPrePlugin( this.shadowMapPlugin );
+	this.addPrePlugin( this.projectorPlugin );
 
 	this.addPostPlugin( new THREE.SpritePlugin() );
 	this.addPostPlugin( new THREE.LensFlarePlugin() );

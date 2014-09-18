@@ -13,6 +13,7 @@ THREE.Scene = function () {
 	this.matrixAutoUpdate = false;
 
 	this.__lights = [];
+	this.__projectors = [];
 
 	this.__objectsAdded = [];
 	this.__objectsRemoved = [];
@@ -20,6 +21,20 @@ THREE.Scene = function () {
 };
 
 THREE.Scene.prototype = Object.create( THREE.Object3D.prototype );
+
+THREE.Scene.prototype.addProjector = function ( p ) {
+  if ( this.__projectors.indexOf( p ) === - 1 ) {
+    this.__projectors.push( p );
+  }
+
+}
+THREE.Scene.prototype.removeProjector = function ( p ) {
+  var i = this.__projectors.indexOf( p );
+  if ( i !== -1 ) {
+    this.__projectors.splice( i, 1 );
+  }
+}
+
 
 THREE.Scene.prototype.__addObject = function ( object ) {
 
