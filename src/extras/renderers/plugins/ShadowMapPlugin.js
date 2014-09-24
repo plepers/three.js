@@ -14,7 +14,8 @@ THREE.ShadowMapPlugin = function () {
 	_min = new THREE.Vector3(),
 	_max = new THREE.Vector3(),
 
-	_matrixPosition = new THREE.Vector3();
+	_matrixPosition = new THREE.Vector3(),
+	__vec3 = new THREE.Vector3();
 
 	this.init = function ( renderer ) {
 
@@ -62,6 +63,7 @@ THREE.ShadowMapPlugin = function () {
 		// set GL state for depth map
 
 		_gl.clearColor( 1, 1, 1, 1 );
+//		_gl.clearColor( 0, 0, 0, 0 );
 		_gl.disable( _gl.BLEND );
 
 		_gl.enable( _gl.CULL_FACE );
@@ -76,6 +78,8 @@ THREE.ShadowMapPlugin = function () {
 			_gl.cullFace( _gl.BACK );
 
 		}
+
+
 
 		_renderer.setDepthTest( true );
 
@@ -201,8 +205,56 @@ THREE.ShadowMapPlugin = function () {
 
 			shadowCamera.position.getPositionFromMatrix( light.matrixWorld );
 			_matrixPosition.getPositionFromMatrix( light.target.matrixWorld );
-			shadowCamera.lookAt( _matrixPosition );
-			shadowCamera.updateMatrixWorld();
+
+
+      var up = new THREE.Vector3()
+      var X = new THREE.Vector3()
+      var mat4 = new THREE.Matrix4()
+
+      // abs light dir
+
+      __vec3.subVectors( shadowCamera.position, _matrixPosition );
+      __vec3.normalize();
+
+      X.set(
+          camera.matrix.elements[10],
+          0,//camera.matrix.elements[9],
+          -camera.matrix.elements[8]
+      );
+      up.set(
+          camera.matrix.elements[8],
+          0,//camera.matrix.elements[9],
+          camera.matrix.elements[10]
+      );
+
+
+      X.normalize()
+      X.projectOnPlane( __vec3 )
+
+      up.normalize()
+      up.projectOnPlane( __vec3 )
+
+
+
+      var te = mat4.elements;
+
+      te[0] = -X.x; te[4] = up.x; te[8] =  __vec3.x;
+      te[1] = -X.y; te[5] = up.y; te[9] =  __vec3.y;
+      te[2] = -X.z; te[6] = up.z; te[10] = __vec3.z;
+
+      te[12] = shadowCamera.position.x;
+      te[13] = shadowCamera.position.y;
+      te[14] = shadowCamera.position.z;
+
+			shadowCamera.matrix.copy( mat4 );
+
+
+
+
+
+//			shadowCamera.lookAt( _matrixPosition );
+      shadowCamera.matrixAutoUpdate = false;
+			shadowCamera.updateMatrixWorld( true );
 
 			shadowCamera.matrixWorldInverse.getInverse( shadowCamera.matrixWorld );
 
@@ -227,7 +279,12 @@ THREE.ShadowMapPlugin = function () {
 			// render shadow map
 
 			_renderer.setRenderTarget( shadowMap );
+      _gl.scissor( 1, 1, light.shadowMapWidth-2, light.shadowMapHeight-2 );
+
+      _gl.disable( _gl.SCISSOR_TEST );
 			_renderer.clear();
+      _gl.enable( _gl.SCISSOR_TEST );
+
 
 			// set object matrices & frustum culling
 
@@ -338,6 +395,8 @@ THREE.ShadowMapPlugin = function () {
 
 		_gl.clearColor( clearColor.r, clearColor.g, clearColor.b, clearAlpha );
 		_gl.enable( _gl.BLEND );
+
+    _gl.disable( _gl.SCISSOR_TEST );
 
 		if ( _renderer.shadowMapCullFace === THREE.CullFaceFront ) {
 

@@ -1472,6 +1472,11 @@ THREE.ShaderChunk = {
 	//  http://spidergl.org/example.php?id=6
 	// 	http://fabiensanglard.net/shadowmapping
 
+
+
+
+
+
 	shadowmap_pars_fragment: [
 
 		"#ifdef USE_SHADOWMAP",
@@ -1486,7 +1491,7 @@ THREE.ShaderChunk = {
 
 			"float unpackDepth( const in vec4 rgba_depth ) {",
 
-				"const vec4 bit_shift = vec4( 1.0 / ( 256.0 * 256.0 * 256.0 ), 1.0 / ( 256.0 * 256.0 ), 1.0 / 256.0, 1.0 );",
+				"const vec4 bit_shift = vec4( 1.0, 1.0/255.0, 1.0/65025.0, 1.0/16581375.0 );",
 				"float depth = dot( rgba_depth, bit_shift );",
 				"return depth;",
 
@@ -3716,15 +3721,26 @@ THREE.ShaderLib = {
 
 		fragmentShader: [
 
-			"vec4 pack_depth( const in float depth ) {",
+//			"vec4 pack_depth( const in float depth ) {",
+//
+//				"const vec4 bit_shift = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );",
+//				"const vec4 bit_mask  = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );",
+//				"vec4 res = fract( depth * bit_shift );",
+//				"res -= res.xxyz * bit_mask;",
+//				"return res;",
+//
+//			"}",
 
-				"const vec4 bit_shift = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );",
-				"const vec4 bit_mask  = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );",
-				"vec4 res = fract( depth * bit_shift );",
-				"res -= res.xxyz * bit_mask;",
-				"return res;",
 
-			"}",
+      "vec4 pack_depth( const in float depth ) {",
+
+      " const vec4 bit_shift = vec4( 1.0, 255.0, 65025.0, 16581375.0 );",
+      " const vec4 bit_mask  = vec4( 1.0/255.0, 1.0/255.0, 1.0/255.0, 0.0 );",
+      " vec4 res = fract( depth * bit_shift );",
+      " res -= res.yzww * bit_mask;",
+      " return res;",
+
+      "}",
 
 			"void main() {",
 
