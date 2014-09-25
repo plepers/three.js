@@ -36806,6 +36806,18 @@ THREE.ShadowMapPlugin = function () {
       up.normalize()
       up.projectOnPlane( __vec3 )
 
+      var l1 = X.length()
+      if( l1 < .2 )
+        X.multiplyScalar(.2/l1 )
+
+      var l2 = up.length()
+      if( l2 < .2 )
+        up.multiplyScalar(.2/l2 )
+
+      //todo : correct extreme skews
+
+//      console.log('[ShadowMapPlugin.update]', l1, l2)
+
 
 
       var te = mat4.elements;
