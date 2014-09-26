@@ -4775,6 +4775,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 			type = uniform.type;
 			value = uniform.value;
 
+      if ( !value ) continue;
+
 			if ( type === "i" ) { // single integer
 
 				_gl.uniform1i( location, value );

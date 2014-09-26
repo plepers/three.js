@@ -15,7 +15,9 @@ THREE.ShadowMapPlugin = function () {
 	_max = new THREE.Vector3(),
 
 	_matrixPosition = new THREE.Vector3(),
-	__vec3 = new THREE.Vector3();
+	__vec3 = new THREE.Vector3(),
+	X = new THREE.Vector3(),
+	Y = new THREE.Vector3();
 
 	this.init = function ( renderer ) {
 
@@ -207,9 +209,6 @@ THREE.ShadowMapPlugin = function () {
 			_matrixPosition.getPositionFromMatrix( light.target.matrixWorld );
 
 
-      var up = new THREE.Vector3()
-      var X = new THREE.Vector3()
-      var mat4 = new THREE.Matrix4()
 
       // abs light dir
 
@@ -221,7 +220,7 @@ THREE.ShadowMapPlugin = function () {
           0,//camera.matrix.elements[9],
           -camera.matrix.elements[8]
       );
-      up.set(
+      Y.set(
           camera.matrix.elements[8],
           0,//camera.matrix.elements[9],
           camera.matrix.elements[10]
@@ -231,16 +230,16 @@ THREE.ShadowMapPlugin = function () {
       X.normalize()
       X.projectOnPlane( __vec3 )
 
-      up.normalize()
-      up.projectOnPlane( __vec3 )
+      Y.normalize()
+      Y.projectOnPlane( __vec3 )
 
       var l1 = X.length()
       if( l1 < .2 )
         X.multiplyScalar(.2/l1 )
 
-      var l2 = up.length()
+      var l2 = Y.length()
       if( l2 < .2 )
-        up.multiplyScalar(.2/l2 )
+        Y.multiplyScalar(.2/l2 )
 
       //todo : correct extreme skews
 
@@ -248,18 +247,15 @@ THREE.ShadowMapPlugin = function () {
 
 
 
-      var te = mat4.elements;
+      var te = shadowCamera.matrix.elements;
 
-      te[0] = -X.x; te[4] = up.x; te[8] =  __vec3.x;
-      te[1] = -X.y; te[5] = up.y; te[9] =  __vec3.y;
-      te[2] = -X.z; te[6] = up.z; te[10] = __vec3.z;
+      te[0] = -X.x; te[4] = Y.x; te[8] =  __vec3.x;
+      te[1] = -X.y; te[5] = Y.y; te[9] =  __vec3.y;
+      te[2] = -X.z; te[6] = Y.z; te[10] = __vec3.z;
 
       te[12] = shadowCamera.position.x;
       te[13] = shadowCamera.position.y;
       te[14] = shadowCamera.position.z;
-
-			shadowCamera.matrix.copy( mat4 );
-
 
 
 
