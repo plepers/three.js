@@ -7,6 +7,7 @@
 
 THREE.WebGLRenderer = function ( parameters ) {
 
+
 	console.log( 'THREE.WebGLRenderer', THREE.REVISION );
 
 	parameters = parameters || {};
@@ -329,17 +330,28 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	};
 
-	this.setViewport = function ( x, y, width, height ) {
+  this.setViewport = function ( x, y, width, height ) {
 
-		_viewportX = x !== undefined ? x : 0;
-		_viewportY = y !== undefined ? y : 0;
+    _viewportX = x !== undefined ? x : 0;
+    _viewportY = y !== undefined ? y : 0;
 
-		_viewportWidth = width !== undefined ? width : _canvas.width;
-		_viewportHeight = height !== undefined ? height : _canvas.height;
+    _viewportWidth = width !== undefined ? width : _canvas.width;
+    _viewportHeight = height !== undefined ? height : _canvas.height;
 
-		_gl.viewport( _viewportX, _viewportY, _viewportWidth, _viewportHeight );
+    _gl.viewport( _viewportX, _viewportY, _viewportWidth, _viewportHeight );
 
-	};
+  };
+
+  this.getViewport = function () {
+
+    return {
+      x : _viewportX,
+      y : _viewportY,
+      width : _viewportWidth,
+      height : _viewportHeight
+    };
+
+  };
 
 	this.setScissor = function ( x, y, width, height ) {
 
@@ -6596,7 +6608,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 		_glExtensionTextureFilterAnisotropic = _gl.getExtension( 'EXT_texture_filter_anisotropic' ) || _gl.getExtension( 'MOZ_EXT_texture_filter_anisotropic' ) || _gl.getExtension( 'WEBKIT_EXT_texture_filter_anisotropic' );
 
 		_glExtensionCompressedTextureS3TC = _gl.getExtension( 'WEBGL_compressed_texture_s3tc' ) || _gl.getExtension( 'MOZ_WEBGL_compressed_texture_s3tc' ) || _gl.getExtension( 'WEBKIT_WEBGL_compressed_texture_s3tc' );
-    _glExtensionCompressedTexturePVRTC = _gl.getExtension( 'WEBGL_compressed_texture_pvrtc' ) || _gl.getExtension( 'MOZ_WEBGL_compressed_texture_pvrtc' ) || _gl.getExtension( 'WEBKIT_WEBGL_compressed_texture_pvrtc' );
+    _glExtensionCompressedTexturePVRTC = _gl.getExtension( 'WEBGL_compressed_texture_pvrtc' ) || _gl.getExtension( 'WEBKIT_WEBGL_compressed_texture_pvrtc' );
 
 		if ( ! _glExtensionTextureFloat ) {
 

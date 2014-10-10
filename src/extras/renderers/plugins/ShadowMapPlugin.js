@@ -279,7 +279,7 @@ THREE.ShadowMapPlugin = function () {
 			shadowMatrix.multiply( shadowCamera.projectionMatrix );
 			shadowMatrix.multiply( shadowCamera.matrixWorldInverse );
 
-			// update camera matrices and frustum
+			// update  camera matrices and frustum
 
 			_projScreenMatrix.multiplyMatrices( shadowCamera.projectionMatrix, shadowCamera.matrixWorldInverse );
 			_frustum.setFromMatrix( _projScreenMatrix );

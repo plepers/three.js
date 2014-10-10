@@ -2,6 +2,8 @@
 	"examples/js/controls/OrbitControls.js",
 	"examples/js/controls/FirstPersonControls.js",
 	"examples/js/shaders/BokehShader2.js",
+	"examples/js/effects/VREffect.js",
+	"examples/js/controls/VRControls.js",
 
   "src/extras/renderers/plugins/ProjectorPlugin.js"
 
