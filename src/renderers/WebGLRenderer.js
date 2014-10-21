@@ -16,6 +16,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	_precision = parameters.precision !== undefined ? parameters.precision : 'highp',
 
+
+  _qualityDefine = "QUALITY_LOW",
 	_alpha = parameters.alpha !== undefined ? parameters.alpha : false,
 	_premultipliedAlpha = parameters.premultipliedAlpha !== undefined ? parameters.premultipliedAlpha : true,
 	_antialias = parameters.antialias !== undefined ? parameters.antialias : false,
@@ -258,6 +260,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 	}
 
 	// API
+
+  this.setQualityDefines = function( str ){
+
+    _qualityDefine = str;
+
+  }
 
 	this.getContext = function () {
 
@@ -5726,6 +5734,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 			"precision " + _precision + " float;",
 			"precision " + _precision + " int;",
 
+      "#define " + _qualityDefine,
+
 			customDefines,
 
 			_supportsVertexTextures ? "#define VERTEX_TEXTURES" : "",
@@ -5817,6 +5827,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 			"precision " + _precision + " int;",
 
 			( parameters.bumpMap || parameters.normalMap ) ? "#extension GL_OES_standard_derivatives : enable" : "",
+
+      "#define " + _qualityDefine,
 
 			customDefines,
 
