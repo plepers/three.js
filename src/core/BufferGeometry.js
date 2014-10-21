@@ -32,6 +32,11 @@ THREE.BufferGeometry = function () {
 
 	this.morphTargets = [];
 
+  this.interleaved = false;
+
+  this.vertexBytes = 0;
+  this.numVertices = 0;
+
 };
 
 THREE.BufferGeometry.prototype = {
@@ -40,12 +45,26 @@ THREE.BufferGeometry.prototype = {
 
 	addAttribute: function( name, type, numItems, itemSize ) {
 
+    console.log('[BufferGeometry.addAttribute]', name, numItems, itemSize );
+
+
+
 		this.attributes[ name ] = {
-
+      stride : this.vertexBytes,
 			itemSize: itemSize,
-			array: new type( numItems * itemSize )
-
+			array: new type( numItems * itemSize ),
+      type : type
 		};
+
+    if( name !== 'index' ) {
+
+      if(this.numVertices == 0 )
+        this.numVertices = numItems;
+      else if( this.numVertices != numItems )
+        throw new Error( "BufferGeom non heterogenous bufers sizes" );
+
+      this.vertexBytes += type.BYTES_PER_ELEMENT * itemSize;
+    }
 
 	},
 

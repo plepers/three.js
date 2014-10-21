@@ -111,7 +111,7 @@ THREE.ProjectorPlugin = function () {
 
 
 
-
+      proj.preRender( scene );
 
 
 
