@@ -1081,99 +1081,23 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 
     if( geometry.interleaved ) {
+//
+//      var numVerts = geometry.numVertices;
+//      var vertexBytes = geometry.vertexBytes;
 
-      var numVerts = geometry.numVertices;
-      var vertexBytes = geometry.vertexBytes;
+      var i, j;
+      for (i = 0, j = geometry.buffers.length; i < j; i++) {
+        var buf = geometry.buffers[i];
+        buf.___glBuffer = _gl.createBuffer();
 
-      var interleaved = geometry.__interleavedBuffer = _gl.createBuffer();
-      var data = new ArrayBuffer( vertexBytes * numVerts );
-
-
-      for ( a in geometry.attributes ) {
-
-
-        attribute = geometry.attributes[ a ];
-
-        if ( a === "index" ) {
+        var type = buf.isIndex ? _gl.ELEMENT_ARRAY_BUFFER : _gl.ARRAY_BUFFER;
 
 
-          attribute.buffer = _gl.createBuffer();
-
-          _gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, attribute.buffer );
-          _gl.bufferData( _gl.ELEMENT_ARRAY_BUFFER, attribute.array, _gl.STATIC_DRAW );
-
-        } else {
-
-          var view = new attribute.type( data );
-          var numElems = attribute.itemSize;
-          var stride = attribute.stride/ attribute.type.BYTES_PER_ELEMENT;
-          var array = attribute.array;
-          var vertexLen = vertexBytes / attribute.type.BYTES_PER_ELEMENT;
-
-          var  i, j, l;
-
-
-          if( numElems === 1 ) {
-
-            for ( i = 0;  i < numVerts;  i++) {
-
-              j = vertexLen * i + stride;
-
-              view[j  ] = array[i  ];
-            }
-
-          }
-
-          else if( numElems === 2 ) {
-
-            for ( i = 0;  i < numVerts;  i++) {
-
-              j = vertexLen * i + stride;
-
-              view[j  ] = array[i*2  ];
-              view[j+1] = array[i*2+1];
-            }
-
-          }
-
-          else if( numElems === 3 ) {
-
-            for ( i = 0;  i < numVerts;  i++) {
-
-              j = vertexLen * i + stride;
-
-              view[j  ] = array[i*3  ];
-              view[j+1] = array[i*3+1];
-              view[j+2] = array[i*3+2];
-            }
-
-          }
-
-          else if( numElems === 4 ) {
-
-            for ( i = 0;  i < numVerts;  i++) {
-
-              j = vertexLen * i + stride;
-
-              view[j  ] = array[i*4  ];
-              view[j+1] = array[i*4+1];
-              view[j+2] = array[i*4+2];
-              view[j+3] = array[i*4+3];
-            }
-
-          }
-
-          else
-            throw new Error("unsupported numElems");
-
-         }
-
+        _gl.bindBuffer( type, buf.___glBuffer );
+        _gl.bufferData( type, buf.data, _gl.STATIC_DRAW );
       }
 
 
-
-      _gl.bindBuffer( _gl.ARRAY_BUFFER, interleaved );
-      _gl.bufferData( _gl.ARRAY_BUFFER, data, _gl.STATIC_DRAW );
 
 
     } else {
@@ -2747,13 +2671,17 @@ THREE.WebGLRenderer = function ( parameters ) {
 //                  if( attributeName == 'skinWeight' ||  attributeName == 'skinIndex' )
 //                    console.log(attributeItem);
 
-									attributeSize = attributeItem.itemSize;
+									attributeSize = attributeItem.infos.len;
 
                   if( geometry.interleaved === true ) {
+                    var buf = attributeItem.buffer;
 
-                    _gl.bindBuffer( _gl.ARRAY_BUFFER, geometry.__interleavedBuffer );
+                    _gl.bindBuffer( _gl.ARRAY_BUFFER, buf.___glBuffer );
                     enableAttribute( attributePointer );
-                    _gl.vertexAttribPointer( attributePointer, attributeSize, _gl.FLOAT, false, geometry.vertexBytes, startIndex * geometry.vertexBytes + attributeItem.stride ); // 4 bytes per Float32
+
+                    // TODO use buffer tpe, here gl float is hardcoded
+//                    console.log( "Strides n offsets", buf.stride, startIndex * buf.stride + attributeItem.infos.offset );
+                    _gl.vertexAttribPointer( attributePointer, attributeSize, _gl.FLOAT, false, buf.strideBytes, startIndex * buf.strideBytes + attributeItem.infos.offsetBytes ); // 4 bytes per Float32
 
                   } else {
 
@@ -2781,8 +2709,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 						}
 
 						// indices
-
-						_gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, index.buffer );
+            if( geometry.interleaved === true ) {
+              _gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, index.buffer.___glBuffer );
+            } else {
+						  _gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, index.buffer );
+            }
 
 					}
 
