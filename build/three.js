@@ -16759,7 +16759,6 @@ THREE.ShaderChunk = {
 		"#ifdef USE_MAP",
 
 			"vec4 texelColor = texture2D( map, vUv );",
-			"texelColor.rgb = vec3( ( texelColor.r + texelColor.g + texelColor.b )/3.0 );",
 
 			"#ifdef GAMMA_INPUT",
 
@@ -23000,7 +22999,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 								attributeSize = attributeItem.itemSize;
 								_gl.bindBuffer( _gl.ARRAY_BUFFER, attributeItem.buffer );
 								enableAttribute( attributePointer );
-                throw "lkjlj"
 								_gl.vertexAttribPointer( attributePointer, attributeSize, _gl.FLOAT, false, 0, 0 );
 
 							} else if ( material.defaultAttributeValues && material.defaultAttributeValues[ attributeName ] ) {
@@ -23225,7 +23223,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 					_gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglColorBuffer );
 					enableAttribute( attributes.color );
-          throw "lkjlj"
 					_gl.vertexAttribPointer( attributes.color, 3, _gl.FLOAT, false, 0, 0 );
 
 				} else if ( material.defaultAttributeValues ) {
@@ -23243,7 +23240,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				_gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglNormalBuffer );
 				enableAttribute( attributes.normal );
-        throw "lkjlj"
 				_gl.vertexAttribPointer( attributes.normal, 3, _gl.FLOAT, false, 0, 0 );
 
 			}
@@ -23254,7 +23250,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				_gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglTangentBuffer );
 				enableAttribute( attributes.tangent );
-        throw "lkjlj"
 				_gl.vertexAttribPointer( attributes.tangent, 4, _gl.FLOAT, false, 0, 0 );
 
 			}
@@ -23267,7 +23262,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 					_gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglUVBuffer );
 					enableAttribute( attributes.uv );
-          throw "lkjlj"
 					_gl.vertexAttribPointer( attributes.uv, 2, _gl.FLOAT, false, 0, 0 );
 
 				} else if ( material.defaultAttributeValues ) {
@@ -23285,7 +23279,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 					_gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglUV2Buffer );
 					enableAttribute( attributes.uv2 );
-          throw "lkjlj"
 					_gl.vertexAttribPointer( attributes.uv2, 2, _gl.FLOAT, false, 0, 0 );
 
 				} else if ( material.defaultAttributeValues ) {
@@ -23316,7 +23309,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				_gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglLineDistanceBuffer );
 				enableAttribute( attributes.lineDistance );
-        throw "lkjlj"
 				_gl.vertexAttribPointer( attributes.lineDistance, 1, _gl.FLOAT, false, 0, 0 );
 
 			}
@@ -39645,19 +39637,21 @@ THREE.ProjectorPlugin = function () {
 
       proj.invalidDepth = false;
 
-      var shadowFilter = THREE.LinearFilter;
 
-      if ( _renderer.shadowMapType === THREE.PCFSoftShadowMap ) {
+      if ( ! light.shadowMap ) {
+        var shadowFilter = THREE.LinearFilter;
 
-        shadowFilter = THREE.NearestFilter;
+        if ( _renderer.shadowMapType === THREE.PCFSoftShadowMap ) {
 
+          shadowFilter = THREE.NearestFilter;
+
+        }
+
+        var pars = { minFilter: shadowFilter, magFilter: shadowFilter, format: THREE.RGBAFormat };
+
+        light.shadowMap = new THREE.WebGLRenderTarget( light.shadowMapWidth, light.shadowMapHeight, pars );
+        light.shadowMapSize = new THREE.Vector2( light.shadowMapWidth, light.shadowMapHeight );
       }
-
-      var pars = { minFilter: shadowFilter, magFilter: shadowFilter, format: THREE.RGBAFormat };
-
-      light.shadowMap = new THREE.WebGLRenderTarget( light.shadowMapWidth, light.shadowMapHeight, pars );
-      light.shadowMapSize = new THREE.Vector2( light.shadowMapWidth, light.shadowMapHeight );
-
 
 
       proj.preRender( scene );

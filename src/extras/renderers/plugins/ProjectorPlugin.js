@@ -96,19 +96,21 @@ THREE.ProjectorPlugin = function () {
 
       proj.invalidDepth = false;
 
-      var shadowFilter = THREE.LinearFilter;
 
-      if ( _renderer.shadowMapType === THREE.PCFSoftShadowMap ) {
+      if ( ! light.shadowMap ) {
+        var shadowFilter = THREE.LinearFilter;
 
-        shadowFilter = THREE.NearestFilter;
+        if ( _renderer.shadowMapType === THREE.PCFSoftShadowMap ) {
 
+          shadowFilter = THREE.NearestFilter;
+
+        }
+
+        var pars = { minFilter: shadowFilter, magFilter: shadowFilter, format: THREE.RGBAFormat };
+
+        light.shadowMap = new THREE.WebGLRenderTarget( light.shadowMapWidth, light.shadowMapHeight, pars );
+        light.shadowMapSize = new THREE.Vector2( light.shadowMapWidth, light.shadowMapHeight );
       }
-
-      var pars = { minFilter: shadowFilter, magFilter: shadowFilter, format: THREE.RGBAFormat };
-
-      light.shadowMap = new THREE.WebGLRenderTarget( light.shadowMapWidth, light.shadowMapHeight, pars );
-      light.shadowMapSize = new THREE.Vector2( light.shadowMapWidth, light.shadowMapHeight );
-
 
 
       proj.preRender( scene );
