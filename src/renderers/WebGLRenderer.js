@@ -440,6 +440,18 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	// Rendering
 
+  this.softReset = function(){
+    _currentProgram = null;
+    _oldBlending = -1;
+    _oldDepthTest = -1;
+    _oldDepthWrite = -1;
+    _currentGeometryGroupHash = -1;
+    _currentMaterialId = -1;
+    _lightsNeedUpdate = true;
+    _oldDoubleSided = -1;
+    _oldFlipSided = -1;
+  };
+
 	this.updateShadowMap = function ( scene, camera ) {
 
 		_currentProgram = null;
@@ -3310,7 +3322,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	// Rendering
 
-	this.render = function ( scene, camera, renderTarget, forceClear ) {
+	this.render = function ( scene, camera, renderTarget, forceClear, doRenderPlugins ) {
 
 		if ( camera instanceof THREE.Camera === false ) {
 
@@ -3318,6 +3330,9 @@ THREE.WebGLRenderer = function ( parameters ) {
 			return;
 
 		}
+
+    if( doRenderPlugins == undefined )
+      doRenderPlugins = true;
 
 		var i, il,
 
@@ -3351,7 +3366,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		// custom render plugins (pre pass)
 
-		renderPlugins( this.renderPluginsPre, scene, camera );
+		if( doRenderPlugins )
+      renderPlugins( this.renderPluginsPre, scene, camera );
 
 		//
 
@@ -3470,8 +3486,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 		}
 
 		// custom render plugins (post pass)
-
-		renderPlugins( this.renderPluginsPost, scene, camera );
+    if( doRenderPlugins )
+		  renderPlugins( this.renderPluginsPost, scene, camera );
 
 
 		// Generate mipmap if we're using any kind of mipmap filtering
@@ -4399,6 +4415,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
+
 		if ( refreshMaterial || camera !== _currentCamera ) {
 
 			_gl.uniformMatrix4fv( p_uniforms.projectionMatrix, false, camera.projectionMatrix.elements );
@@ -4564,6 +4581,11 @@ THREE.WebGLRenderer = function ( parameters ) {
     if ( material.customShader != null ) {
       material.refreshObjectState(m_uniforms, object);
     }
+
+
+
+
+
 
 		return program;
 
@@ -5330,6 +5352,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 		zlights.ambient[ 0 ] = r;
 		zlights.ambient[ 1 ] = g;
 		zlights.ambient[ 2 ] = b;
+
+
 
 	};
 
