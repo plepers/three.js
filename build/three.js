@@ -10292,6 +10292,50 @@ THREE.SpotLight.prototype.clone = function () {
 };
 
 /**
+ * @author mrdoob / http://mrdoob.com/
+ */
+
+THREE.Cache = function () {
+
+	this.files = {};
+
+};
+
+THREE.Cache.prototype = {
+
+	constructor: THREE.Cache,
+
+	add: function ( key, file ) {
+
+		// console.log( 'THREE.Cache', 'Adding key:', key );
+
+		this.files[ key ] = file;
+
+	},
+
+	get: function ( key ) {
+
+		// console.log( 'THREE.Cache', 'Checking key:', key );
+
+		return this.files[ key ];
+
+	},
+
+	remove: function ( key ) {
+
+		delete this.files[ key ];
+
+	},
+
+	clear: function () {
+
+		this.files = {}
+
+	}
+
+};
+
+/**
  * @author alteredq / http://alteredqualia.com/
  */
 
@@ -10739,64 +10783,81 @@ THREE.Loader.prototype = {
 
 THREE.XHRLoader = function ( manager ) {
 
-	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
+  this.cache = new THREE.Cache();
+  this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
 
 };
 
 THREE.XHRLoader.prototype = {
 
-	constructor: THREE.XHRLoader,
+  constructor: THREE.XHRLoader,
 
-	load: function ( url, onLoad, onProgress, onError ) {
+  load: function ( url, onLoad, onProgress, onError ) {
 
-		var scope = this;
-		var request = new XMLHttpRequest();
+    var scope = this;
 
-		if ( onLoad !== undefined ) {
+    var cached = scope.cache.get( url );
 
-			request.addEventListener( 'load', function ( event ) {
+    if ( cached !== undefined ) {
 
-				onLoad( event.target.responseText );
-				scope.manager.itemEnd( url );
+      if ( onLoad ) onLoad( cached );
+      return;
 
-			}, false );
+    }
 
-		}
+    var request = new XMLHttpRequest();
+    request.open( 'GET', url, true );
 
-		if ( onProgress !== undefined ) {
+    request.addEventListener( 'load', function ( event ) {
 
-			request.addEventListener( 'progress', function ( event ) {
+      scope.cache.add( url, this.response );
 
-				onProgress( event );
+      if ( onLoad ) onLoad( this.response );
 
-			}, false );
+      scope.manager.itemEnd( url );
 
-		}
+    }, false );
 
-		if ( onError !== undefined ) {
+    if ( onProgress !== undefined ) {
 
-			request.addEventListener( 'error', function ( event ) {
+      request.addEventListener( 'progress', function ( event ) {
 
-				onError( event );
+        onProgress( event );
 
-			}, false );
+      }, false );
 
-		}
+    }
 
-		if ( this.crossOrigin !== undefined ) request.crossOrigin = this.crossOrigin;
+    if ( onError !== undefined ) {
 
-		request.open( 'GET', url, true );
-		request.send( null );
+      request.addEventListener( 'error', function ( event ) {
 
-		scope.manager.itemStart( url );
+        onError( event );
 
-	},
+      }, false );
 
-	setCrossOrigin: function ( value ) {
+    }
 
-		this.crossOrigin = value;
+    if ( this.crossOrigin !== undefined ) request.crossOrigin = this.crossOrigin;
+    if ( this.responseType !== undefined ) request.responseType = this.responseType;
 
-	}
+    request.send( null );
+
+    scope.manager.itemStart( url );
+
+  },
+
+  setResponseType: function ( value ) {
+
+    this.responseType = value;
+
+  },
+
+  setCrossOrigin: function ( value ) {
+
+    this.crossOrigin = value;
+
+  }
 
 };
 
@@ -39563,6 +39624,621 @@ THREE.VRControls = function ( camera, done ) {
 	};
 
 };
+/**
+ * @author mrdoob / http://mrdoob.com/
+ *
+ * Abstract Base class to block based textures loader (dds, pvr, ...)
+ */
+
+THREE.CompressedTextureLoader = function () {
+
+	// override in sub classes
+	this._parser = null;
+
+};
+
+
+THREE.CompressedTextureLoader.prototype = {
+
+	constructor: THREE.CompressedTextureLoader,
+
+	load: function ( url, onLoad, onError ) {
+
+		var scope = this;
+
+		var images = [];
+
+		var texture = new THREE.CompressedTexture();
+		texture.image = images;
+
+		var loader = new THREE.XHRLoader();
+		loader.setResponseType( 'arraybuffer' );
+
+		if ( url instanceof Array ) {
+
+			var loaded = 0;
+
+			var loadTexture = function ( i ) {
+
+				loader.load( url[ i ], function ( buffer ) {
+
+					var texDatas = scope._parser( buffer, true );
+
+					images[ i ] = {
+						width: texDatas.width,
+						height: texDatas.height,
+						format: texDatas.format,
+						mipmaps: texDatas.mipmaps
+					};
+
+					loaded += 1;
+
+					if ( loaded === 6 ) {
+
+ 						if (texDatas.mipmapCount == 1)
+ 							texture.minFilter = THREE.LinearFilter;
+
+						texture.format = texDatas.format;
+						texture.needsUpdate = true;
+
+						if ( onLoad ) onLoad( texture );
+
+					}
+
+				} );
+
+			};
+
+			for ( var i = 0, il = url.length; i < il; ++ i ) {
+
+				loadTexture( i );
+
+			}
+
+		} else {
+
+			// compressed cubemap texture stored in a single DDS file
+
+			loader.load( url, function ( buffer ) {
+
+				var texDatas = scope._parser( buffer, true );
+
+				if ( texDatas.isCubemap ) {
+
+					var faces = texDatas.mipmaps.length / texDatas.mipmapCount;
+
+					for ( var f = 0; f < faces; f ++ ) {
+
+						images[ f ] = { mipmaps : [] };
+
+						for ( var i = 0; i < texDatas.mipmapCount; i ++ ) {
+
+							images[ f ].mipmaps.push( texDatas.mipmaps[ f * texDatas.mipmapCount + i ] );
+							images[ f ].format = texDatas.format;
+							images[ f ].width = texDatas.width;
+							images[ f ].height = texDatas.height;
+
+						}
+
+					}
+
+				} else {
+
+					texture.image.width = texDatas.width;
+					texture.image.height = texDatas.height;
+					texture.mipmaps = texDatas.mipmaps;
+
+				}
+
+				if ( texDatas.mipmapCount === 1 ) {
+
+					texture.minFilter = THREE.LinearFilter;
+
+				}
+
+				texture.format = texDatas.format;
+				texture.needsUpdate = true;
+
+				if ( onLoad ) onLoad( texture );
+
+			} );
+
+		}
+
+		return texture;
+
+	}
+
+};
+
+/**
+ * @author mrdoob / http://mrdoob.com/
+ */
+
+THREE.DDSLoader = function () {
+	this._parser = THREE.DDSLoader.parse;
+};
+
+THREE.DDSLoader.prototype = Object.create( THREE.CompressedTextureLoader.prototype );
+
+THREE.DDSLoader.parse = function ( buffer, loadMipmaps ) {
+
+	var dds = { mipmaps: [], width: 0, height: 0, format: null, mipmapCount: 1 };
+
+	// Adapted from @toji's DDS utils
+	//	https://github.com/toji/webgl-texture-utils/blob/master/texture-util/dds.js
+
+	// All values and structures referenced from:
+	// http://msdn.microsoft.com/en-us/library/bb943991.aspx/
+
+	var DDS_MAGIC = 0x20534444;
+
+	var DDSD_CAPS = 0x1,
+		DDSD_HEIGHT = 0x2,
+		DDSD_WIDTH = 0x4,
+		DDSD_PITCH = 0x8,
+		DDSD_PIXELFORMAT = 0x1000,
+		DDSD_MIPMAPCOUNT = 0x20000,
+		DDSD_LINEARSIZE = 0x80000,
+		DDSD_DEPTH = 0x800000;
+
+	var DDSCAPS_COMPLEX = 0x8,
+		DDSCAPS_MIPMAP = 0x400000,
+		DDSCAPS_TEXTURE = 0x1000;
+
+	var DDSCAPS2_CUBEMAP = 0x200,
+		DDSCAPS2_CUBEMAP_POSITIVEX = 0x400,
+		DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800,
+		DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000,
+		DDSCAPS2_CUBEMAP_NEGATIVEY = 0x2000,
+		DDSCAPS2_CUBEMAP_POSITIVEZ = 0x4000,
+		DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000,
+		DDSCAPS2_VOLUME = 0x200000;
+
+	var DDPF_ALPHAPIXELS = 0x1,
+		DDPF_ALPHA = 0x2,
+		DDPF_FOURCC = 0x4,
+		DDPF_RGB = 0x40,
+		DDPF_YUV = 0x200,
+		DDPF_LUMINANCE = 0x20000;
+
+	function fourCCToInt32( value ) {
+
+		return value.charCodeAt(0) +
+			(value.charCodeAt(1) << 8) +
+			(value.charCodeAt(2) << 16) +
+			(value.charCodeAt(3) << 24);
+
+	}
+
+	function int32ToFourCC( value ) {
+
+		return String.fromCharCode(
+			value & 0xff,
+			(value >> 8) & 0xff,
+			(value >> 16) & 0xff,
+			(value >> 24) & 0xff
+		);
+	}
+
+	function loadARGBMip( buffer, dataOffset, width, height ) {
+		var dataLength = width*height*4;
+		var srcBuffer = new Uint8Array( buffer, dataOffset, dataLength );
+		var byteArray = new Uint8Array( dataLength );
+		var dst = 0;
+		var src = 0;
+		for ( var y = 0; y < height; y++ ) {
+			for ( var x = 0; x < width; x++ ) {
+				var b = srcBuffer[src]; src++;
+				var g = srcBuffer[src]; src++;
+				var r = srcBuffer[src]; src++;
+				var a = srcBuffer[src]; src++;
+				byteArray[dst] = r; dst++;	//r
+				byteArray[dst] = g; dst++;	//g
+				byteArray[dst] = b; dst++;	//b
+				byteArray[dst] = a; dst++;	//a
+			}
+		}
+		return byteArray;
+	}
+
+	var FOURCC_DXT1 = fourCCToInt32("DXT1");
+	var FOURCC_DXT3 = fourCCToInt32("DXT3");
+	var FOURCC_DXT5 = fourCCToInt32("DXT5");
+
+	var headerLengthInt = 31; // The header length in 32 bit ints
+
+	// Offsets into the header array
+
+	var off_magic = 0;
+
+	var off_size = 1;
+	var off_flags = 2;
+	var off_height = 3;
+	var off_width = 4;
+
+	var off_mipmapCount = 7;
+
+	var off_pfFlags = 20;
+	var off_pfFourCC = 21;
+	var off_RGBBitCount = 22;
+	var off_RBitMask = 23;
+	var off_GBitMask = 24;
+	var off_BBitMask = 25;
+	var off_ABitMask = 26;
+
+	var off_caps = 27;
+	var off_caps2 = 28;
+	var off_caps3 = 29;
+	var off_caps4 = 30;
+
+	// Parse header
+
+	var header = new Int32Array( buffer, 0, headerLengthInt );
+
+	if ( header[ off_magic ] !== DDS_MAGIC ) {
+
+		console.error( 'THREE.DDSLoader.parse: Invalid magic number in DDS header.' );
+		return dds;
+
+	}
+
+	if ( ! header[ off_pfFlags ] & DDPF_FOURCC ) {
+
+		console.error( 'THREE.DDSLoader.parse: Unsupported format, must contain a FourCC code.' );
+		return dds;
+
+	}
+
+	var blockBytes;
+
+	var fourCC = header[ off_pfFourCC ];
+
+	var isRGBAUncompressed = false;
+
+	switch ( fourCC ) {
+
+		case FOURCC_DXT1:
+
+			blockBytes = 8;
+			dds.format = THREE.RGB_S3TC_DXT1_Format;
+			break;
+
+		case FOURCC_DXT3:
+
+			blockBytes = 16;
+			dds.format = THREE.RGBA_S3TC_DXT3_Format;
+			break;
+
+		case FOURCC_DXT5:
+
+			blockBytes = 16;
+			dds.format = THREE.RGBA_S3TC_DXT5_Format;
+			break;
+
+		default:
+
+			if( header[off_RGBBitCount] ==32 
+				&& header[off_RBitMask]&0xff0000
+				&& header[off_GBitMask]&0xff00 
+				&& header[off_BBitMask]&0xff
+				&& header[off_ABitMask]&0xff000000  ) {
+				isRGBAUncompressed = true;
+				blockBytes = 64;
+				dds.format = THREE.RGBAFormat;
+			} else {
+				console.error( 'THREE.DDSLoader.parse: Unsupported FourCC code ', int32ToFourCC( fourCC ) );
+				return dds;
+			}
+	}
+
+	dds.mipmapCount = 1;
+
+	if ( header[ off_flags ] & DDSD_MIPMAPCOUNT && loadMipmaps !== false ) {
+
+		dds.mipmapCount = Math.max( 1, header[ off_mipmapCount ] );
+
+	}
+
+	//TODO: Verify that all faces of the cubemap are present with DDSCAPS2_CUBEMAP_POSITIVEX, etc.
+
+	dds.isCubemap = header[ off_caps2 ] & DDSCAPS2_CUBEMAP ? true : false;
+
+	dds.width = header[ off_width ];
+	dds.height = header[ off_height ];
+
+	var dataOffset = header[ off_size ] + 4;
+
+	// Extract mipmaps buffers
+
+	var width = dds.width;
+	var height = dds.height;
+
+	var faces = dds.isCubemap ? 6 : 1;
+
+	for ( var face = 0; face < faces; face ++ ) {
+
+		for ( var i = 0; i < dds.mipmapCount; i ++ ) {
+
+			if( isRGBAUncompressed ) {
+				var byteArray = loadARGBMip( buffer, dataOffset, width, height );
+				var dataLength = byteArray.length;
+			} else {
+				var dataLength = Math.max( 4, width ) / 4 * Math.max( 4, height ) / 4 * blockBytes;
+				var byteArray = new Uint8Array( buffer, dataOffset, dataLength );
+			}
+			
+			var mipmap = { "data": byteArray, "width": width, "height": height };
+			dds.mipmaps.push( mipmap );
+
+			dataOffset += dataLength;
+
+			width = Math.max( width * 0.5, 1 );
+			height = Math.max( height * 0.5, 1 );
+
+		}
+
+		width = dds.width;
+		height = dds.height;
+
+	}
+
+	return dds;
+
+};
+
+
+//
+//	 PVRLoader
+//  Author: pierre lepers
+//  Date: 17/09/2014 11:09
+//
+//	 PVR v2 (legacy) parser
+//  TODO : Add Support for PVR v3 format
+//  TODO : implement loadMipmaps option
+//
+
+
+THREE.PVRLoader = function () {
+	this._parser = THREE.PVRLoader.parse;
+};
+
+THREE.PVRLoader.prototype = Object.create( THREE.CompressedTextureLoader.prototype );
+
+
+THREE.PVRLoader.parse = function ( buffer, loadMipmaps ) {
+	var headerLengthInt = 13;
+	var header = new Uint32Array( buffer, 0, headerLengthInt );
+
+	var pvrDatas = {
+		buffer: buffer,
+		header : header,
+		loadMipmaps : loadMipmaps
+	};
+
+	// PVR v3
+	if( header[0] === 0x03525650 ) {
+		return THREE.PVRLoader._parseV3( pvrDatas );
+	} 
+	// PVR v2
+	else if( header[11] === 0x21525650) {
+		return THREE.PVRLoader._parseV2( pvrDatas );
+
+	} else {
+		throw new Error( "[THREE.PVRLoader] Unknown PVR format" );
+	}
+
+};
+
+THREE.PVRLoader._parseV3 = function ( pvrDatas ) {
+	
+	var header = pvrDatas.header;
+	var bpp, format;
+	
+
+	var metaLen 	  = header[12],
+		pixelFormat   =  header[2],
+		height        =  header[6],
+		width         =  header[7],
+		numSurfs      =  header[9],
+		numFaces      =  header[10],
+		numMipmaps    =  header[11];
+
+	switch( pixelFormat ) {
+		case 0 : // PVRTC 2bpp RGB
+			bpp = 2;
+			format = THREE.RGB_PVRTC_2BPPV1_Format;
+			break;
+		case 1 : // PVRTC 2bpp RGBA
+			bpp = 2
+			format = THREE.RGBA_PVRTC_2BPPV1_Format;
+			break;
+		case 2 : // PVRTC 4bpp RGB
+			bpp = 4
+			format = THREE.RGB_PVRTC_4BPPV1_Format;
+			break;
+		case 3 : // PVRTC 4bpp RGBA
+			bpp = 4
+			format = THREE.RGBA_PVRTC_4BPPV1_Format;
+			break;
+		default :
+			throw new Error( "pvrtc - unsupported PVR format "+pixelFormat);
+	}
+
+	pvrDatas.dataPtr 	 = 52 + metaLen;
+  	pvrDatas.bpp 		 = bpp;
+  	pvrDatas.format 	 = format;
+  	pvrDatas.width 		 = width;
+  	pvrDatas.height 	 = height;
+  	pvrDatas.numSurfaces = numFaces;
+  	pvrDatas.numMipmaps  = numMipmaps;
+
+  	pvrDatas.isCubemap 	= (numFaces === 6);
+
+  	return THREE.PVRLoader._extract( pvrDatas );
+};
+
+THREE.PVRLoader._parseV2 = function ( pvrDatas ) {
+
+	var header = pvrDatas.header;
+
+	var headerLength  =  header[0],
+		height        =  header[1],
+		width         =  header[2],
+		numMipmaps    =  header[3],
+		flags         =  header[4],
+		dataLength    =  header[5],
+		bpp           =  header[6],
+		bitmaskRed    =  header[7],
+		bitmaskGreen  =  header[8],
+		bitmaskBlue   =  header[9],
+		bitmaskAlpha  =  header[10],
+		pvrTag        =  header[11],
+		numSurfs      =  header[12];
+
+
+	var TYPE_MASK = 0xff
+	var PVRTC_2 = 24,
+		PVRTC_4 = 25
+
+	var formatFlags = flags & TYPE_MASK;
+
+
+
+	var format;
+	var _hasAlpha = bitmaskAlpha > 0;
+
+	if (formatFlags === PVRTC_4 ) {
+		format = _hasAlpha ? THREE.RGBA_PVRTC_4BPPV1_Format : THREE.RGB_PVRTC_4BPPV1_Format;
+		bpp = 4;
+	}
+	else if( formatFlags === PVRTC_2) {
+		format = _hasAlpha ? THREE.RGBA_PVRTC_2BPPV1_Format : THREE.RGB_PVRTC_2BPPV1_Format;
+		bpp = 2;
+	}
+	else
+		throw new Error( "pvrtc - unknown format "+formatFlags);
+	
+
+
+	pvrDatas.dataPtr 	 = headerLength;
+  	pvrDatas.bpp 		 = bpp;
+  	pvrDatas.format 	 = format;
+  	pvrDatas.width 		 = width;
+  	pvrDatas.height 	 = height;
+  	pvrDatas.numSurfaces = numSurfs;
+  	pvrDatas.numMipmaps  = numMipmaps + 1;
+
+  	// guess cubemap type seems tricky in v2
+  	// it juste a pvr containing 6 surface (no explicit cubemap type)
+  	pvrDatas.isCubemap 	= (numSurfs === 6);
+
+  	return THREE.PVRLoader._extract( pvrDatas );
+
+};
+
+
+THREE.PVRLoader._extract = function ( pvrDatas ) {
+	
+	var pvr = {
+		mipmaps: [], 
+		width: pvrDatas.width, 
+		height: pvrDatas.height, 
+		format: pvrDatas.format, 
+		mipmapCount: pvrDatas.numMipmaps, 
+		isCubemap : pvrDatas.isCubemap 
+	};
+
+	var buffer = pvrDatas.buffer;
+
+
+
+	// console.log( "--------------------------" );
+
+	// console.log( "headerLength ", headerLength);
+	// console.log( "height       ", height      );
+	// console.log( "width        ", width       );
+	// console.log( "numMipmaps   ", numMipmaps  );
+	// console.log( "flags        ", flags       );
+	// console.log( "dataLength   ", dataLength  );
+	// console.log( "bpp          ", bpp         );
+	// console.log( "bitmaskRed   ", bitmaskRed  );
+	// console.log( "bitmaskGreen ", bitmaskGreen);
+	// console.log( "bitmaskBlue  ", bitmaskBlue );
+	// console.log( "bitmaskAlpha ", bitmaskAlpha);
+	// console.log( "pvrTag       ", pvrTag      );
+	// console.log( "numSurfs     ", numSurfs    );
+
+
+
+
+	var dataOffset = pvrDatas.dataPtr,
+		bpp = pvrDatas.bpp,
+		numSurfs = pvrDatas.numSurfaces,
+		dataSize = 0,
+		blockSize = 0,
+		blockWidth = 0,
+		blockHeight = 0,
+		widthBlocks = 0,
+		heightBlocks = 0;
+
+
+
+	if( bpp === 2 ){
+		blockWidth = 8;
+		blockHeight = 4;
+	} else {
+		blockWidth = 4;
+		blockHeight = 4;
+	}
+
+	blockSize = (blockWidth * blockHeight) * bpp / 8;
+
+	pvr.mipmaps.length = pvrDatas.numMipmaps * numSurfs;
+
+	var mipLevel = 0;
+
+	while (mipLevel < pvrDatas.numMipmaps) {
+
+		var sWidth = pvrDatas.width >> mipLevel,
+		sHeight = pvrDatas.height >> mipLevel;
+
+		widthBlocks = sWidth / blockWidth;
+		heightBlocks = sHeight / blockHeight;
+
+		// Clamp to minimum number of blocks
+		if (widthBlocks < 2)
+			widthBlocks = 2;
+		if (heightBlocks < 2)
+			heightBlocks = 2;
+
+		dataSize = widthBlocks * heightBlocks * blockSize;
+
+
+		for ( var surfIndex = 0; surfIndex < numSurfs; surfIndex ++ ) {
+
+			var byteArray = new Uint8Array( buffer, dataOffset, dataSize );
+
+			var mipmap = { 
+				data: byteArray, 
+				width: sWidth, 
+				height: sHeight 
+			};
+
+			pvr.mipmaps[ surfIndex * pvrDatas.numMipmaps + mipLevel] = mipmap;
+
+			dataOffset += dataSize;
+
+
+		}
+
+		mipLevel++;
+
+	}
+
+
+	return pvr;
+}
 /**
  * @author alteredq / http://alteredqualia.com/
  */

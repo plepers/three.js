@@ -4,63 +4,80 @@
 
 THREE.XHRLoader = function ( manager ) {
 
-	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
+  this.cache = new THREE.Cache();
+  this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
 
 };
 
 THREE.XHRLoader.prototype = {
 
-	constructor: THREE.XHRLoader,
+  constructor: THREE.XHRLoader,
 
-	load: function ( url, onLoad, onProgress, onError ) {
+  load: function ( url, onLoad, onProgress, onError ) {
 
-		var scope = this;
-		var request = new XMLHttpRequest();
+    var scope = this;
 
-		if ( onLoad !== undefined ) {
+    var cached = scope.cache.get( url );
 
-			request.addEventListener( 'load', function ( event ) {
+    if ( cached !== undefined ) {
 
-				onLoad( event.target.responseText );
-				scope.manager.itemEnd( url );
+      if ( onLoad ) onLoad( cached );
+      return;
 
-			}, false );
+    }
 
-		}
+    var request = new XMLHttpRequest();
+    request.open( 'GET', url, true );
 
-		if ( onProgress !== undefined ) {
+    request.addEventListener( 'load', function ( event ) {
 
-			request.addEventListener( 'progress', function ( event ) {
+      scope.cache.add( url, this.response );
 
-				onProgress( event );
+      if ( onLoad ) onLoad( this.response );
 
-			}, false );
+      scope.manager.itemEnd( url );
 
-		}
+    }, false );
 
-		if ( onError !== undefined ) {
+    if ( onProgress !== undefined ) {
 
-			request.addEventListener( 'error', function ( event ) {
+      request.addEventListener( 'progress', function ( event ) {
 
-				onError( event );
+        onProgress( event );
 
-			}, false );
+      }, false );
 
-		}
+    }
 
-		if ( this.crossOrigin !== undefined ) request.crossOrigin = this.crossOrigin;
+    if ( onError !== undefined ) {
 
-		request.open( 'GET', url, true );
-		request.send( null );
+      request.addEventListener( 'error', function ( event ) {
 
-		scope.manager.itemStart( url );
+        onError( event );
 
-	},
+      }, false );
 
-	setCrossOrigin: function ( value ) {
+    }
 
-		this.crossOrigin = value;
+    if ( this.crossOrigin !== undefined ) request.crossOrigin = this.crossOrigin;
+    if ( this.responseType !== undefined ) request.responseType = this.responseType;
 
-	}
+    request.send( null );
+
+    scope.manager.itemStart( url );
+
+  },
+
+  setResponseType: function ( value ) {
+
+    this.responseType = value;
+
+  },
+
+  setCrossOrigin: function ( value ) {
+
+    this.crossOrigin = value;
+
+  }
 
 };

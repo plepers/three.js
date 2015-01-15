@@ -3,7 +3,11 @@
 	"examples/js/controls/FirstPersonControls.js",
 	"examples/js/shaders/BokehShader2.js",
 	"examples/js/effects/VREffect.js",
-	"examples/js/controls/VRControls.js",
+  "examples/js/controls/VRControls.js",
+
+  "src/loaders/CompressedTextureLoader.js",
+  "examples/js/loaders/DDSLoader.js",
+  "examples/js/loaders/PVRLoader.js",
 
   "src/extras/renderers/plugins/ProjectorPlugin.js"
 
