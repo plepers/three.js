@@ -15417,18 +15417,39 @@ THREE.Scene.prototype.__removeObject = function ( object ) {
 
 THREE.Scene.prototype.clone = function ( object ) {
 
-	if ( object === undefined ) object = new THREE.Scene();
+  if ( object === undefined ) object = new THREE.Scene();
 
-	THREE.Object3D.prototype.clone.call(this, object);
+  THREE.Object3D.prototype.clone.call(this, object);
 
-	if ( this.fog !== null ) object.fog = this.fog.clone();
-	if ( this.overrideMaterial !== null ) object.overrideMaterial = this.overrideMaterial.clone();
+  if ( this.fog !== null ) object.fog = this.fog.clone();
+  if ( this.overrideMaterial !== null ) object.overrideMaterial = this.overrideMaterial.clone();
 
-	object.autoUpdate = this.autoUpdate;
-	object.matrixAutoUpdate = this.matrixAutoUpdate;
+  object.autoUpdate = this.autoUpdate;
+  object.matrixAutoUpdate = this.matrixAutoUpdate;
 
-	return object;
+  return object;
 
+};
+
+THREE.Scene.prototype.dispose = function (  ) {
+
+  this.__lights = null;
+  this.__projectors = null;
+
+  this.__objectsAdded = null;
+  this.__objectsRemoved = null;
+
+  var glObjs = this.__webglObjects;
+
+  if( glObjs ){
+    var i, l;
+    for ( i = 0, l = glObjs.length;  i < l;  i++) {
+      var o = glObjs[ i];
+      o.object.geometry.dispose();
+
+    }
+  }
+  this.__webglObjects = null;
 };
 
 /**
@@ -20940,8 +20961,15 @@ THREE.WebGLRenderer = function ( parameters ) {
 			for ( var key in attributes ) {
 
 				if ( attributes[ key ].buffer !== undefined ) {
+          var buff = attributes[ key ].buffer;
 
-					_gl.deleteBuffer( attributes[ key ].buffer );
+          if( buff.___glBuffer )
+
+            _gl.deleteBuffer( buff.___glBuffer );
+
+          else
+
+					  _gl.deleteBuffer( buff );
 		
 				}
 
@@ -20988,6 +21016,9 @@ THREE.WebGLRenderer = function ( parameters ) {
 			}
 
 		}
+
+    geometry.buffer = null;
+    geometry.attributes = null;
 
 	};
 
@@ -21094,6 +21125,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 			_gl.deleteProgram( program );
 
 			_this.info.memory.programs --;
+
+      delete program.uniforms;
+      delete program.identifiers;
+      delete program.attributes;
+
+      console.log( "dealloc mat ", material, "num progs", _this.info.memory.programs );
 
 		}
 
@@ -23246,6 +23283,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 			if ( updateBuffers ) {
 
 				_gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglVertexBuffer );
+
+        var err = _gl.getError();
+        if( err !== _gl.NO_ERROR){
+          console.log( "error : ", err );
+        }
+
 				enableAttribute( attributes.position );
 
 				_gl.vertexAttribPointer( attributes.position, 3, _gl.FLOAT, false, 0, 0 );
@@ -27078,6 +27121,36 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	};
 
+
+
+  this.dispose = function(){
+
+
+    this.shadowMapPlugin.dispose()
+    this.projectorPlugin.dispose()
+
+    var program;
+
+    for( var i =0; i < _programs.length; i++ )
+      program = _programs[i]
+      _gl.deleteProgram( program = _programs[i] );
+
+      delete program.uniforms;
+      delete program.identifiers;
+      delete program.attributes;
+
+
+    for( var key in this ){
+      delete this[key];
+    }
+
+    _programs.length = 0
+    _programs= null;
+    _canvas = null;
+    _gl = null;
+
+  }
+
 	// default plugins (order is important)
 
 	this.shadowMapPlugin = new THREE.ShadowMapPlugin();
@@ -27085,8 +27158,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 	this.addPrePlugin( this.shadowMapPlugin );
 	this.addPrePlugin( this.projectorPlugin );
 
-	this.addPostPlugin( new THREE.SpritePlugin() );
-	this.addPostPlugin( new THREE.LensFlarePlugin() );
+//	this.addPostPlugin( new THREE.SpritePlugin() );
+//	this.addPostPlugin( new THREE.LensFlarePlugin() );
 
 };
 
@@ -40272,6 +40345,16 @@ THREE.ProjectorPlugin = function () {
 		_depthMaterialMorphSkin._shadowPass = true;
 
 	};
+
+  this.dispose = function() {
+    _depthMaterial.dispose();
+    _depthMaterialMorph.dispose();
+    _depthMaterialSkin.dispose();
+    _depthMaterialMorphSkin.dispose();
+    _gl = null
+    _renderer = null
+
+  };
 
 	this.render = function ( scene, camera ) {
 

@@ -32,6 +32,16 @@ THREE.ProjectorPlugin = function () {
 
 	};
 
+  this.dispose = function() {
+    _depthMaterial.dispose();
+    _depthMaterialMorph.dispose();
+    _depthMaterialSkin.dispose();
+    _depthMaterialMorphSkin.dispose();
+    _gl = null
+    _renderer = null
+
+  };
+
 	this.render = function ( scene, camera ) {
 
 		if ( ! ( _renderer.projectorEnabled && _renderer.projectorAutoUpdate ) ) return;
