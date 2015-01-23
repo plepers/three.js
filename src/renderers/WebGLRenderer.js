@@ -2699,9 +2699,9 @@ THREE.WebGLRenderer = function ( parameters ) {
 //                  if( attributeName == 'skinWeight' ||  attributeName == 'skinIndex' )
 //                    console.log(attributeItem);
 
-									attributeSize = attributeItem.infos.len;
 
                   if( geometry.interleaved === true ) {
+                    attributeSize = attributeItem.infos.len;
                     var buf = attributeItem.buffer;
 
                     _gl.bindBuffer( _gl.ARRAY_BUFFER, buf.___glBuffer );
@@ -2712,6 +2712,7 @@ THREE.WebGLRenderer = function ( parameters ) {
                     _gl.vertexAttribPointer( attributePointer, attributeSize, _gl.FLOAT, false, buf.strideBytes, startIndex * buf.strideBytes + attributeItem.infos.offsetBytes ); // 4 bytes per Float32
 
                   } else {
+                    attributeSize = attributeItem.itemSize;
 
                     _gl.bindBuffer( _gl.ARRAY_BUFFER, attributeItem.buffer );
                     enableAttribute( attributePointer );
