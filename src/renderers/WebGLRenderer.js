@@ -2952,10 +2952,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				_gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglVertexBuffer );
 
-        var err = _gl.getError();
-        if( err !== _gl.NO_ERROR){
-          console.log( "error : ", err );
-        }
+
 
 				enableAttribute( attributes.position );
 
