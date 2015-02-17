@@ -3325,10 +3325,10 @@ THREE.WebGLRenderer = function ( parameters ) {
 	// Sorting
 
 	function painterSortStable ( a, b ) {
-		if ( a.z !== b.z )
-			return b.z - a.z;
-    else if (a.matid !== b.matid)
+    if (a.matid !== b.matid)
       return a.matid - b.matid;
+		else if ( a.z !== b.z )
+			return b.z - a.z;
 		else
 			return a.id - b.id;
 	};
