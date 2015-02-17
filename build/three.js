@@ -19039,13 +19039,13 @@ THREE.UniformsLib = {
 
 	shadowmap: {
 
-		"shadowMap": { type: "tv", value: [] },
-		"shadowMapSize": { type: "v2v", value: [] },
+		"shadowMap": { type: "t", value: [] },
+		"shadowMapSize": { type: "v2", value: [] },
 
-		"shadowBias" : { type: "fv1", value: [] },
-		"shadowDarkness": { type: "fv1", value: [] },
+		"shadowBias" : { type: "f", value: [] },
+		"shadowDarkness": { type: "f", value: [] },
 
-		"shadowMatrix" : { type: "m4v", value: [] }
+		"shadowMatrix" : { type: "m4", value: [] }
 
 	}
 
@@ -23658,10 +23658,10 @@ THREE.WebGLRenderer = function ( parameters ) {
 	// Sorting
 
 	function painterSortStable ( a, b ) {
-    if (a.matid !== b.matid)
-      return a.matid - b.matid;
-		else if ( a.z !== b.z )
+		if ( a.z !== b.z )
 			return b.z - a.z;
+    else if (a.matid !== b.matid)
+      return a.matid - b.matid;
 		else
 			return a.id - b.id;
 	};
@@ -25161,13 +25161,13 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				if ( light instanceof THREE.SpotLight || ( light instanceof THREE.DirectionalLight && ! light.shadowCascade ) ) {
 
-					uniforms.shadowMap.value[ j ] = light.shadowMap;
-					uniforms.shadowMapSize.value[ j ] = light.shadowMapSize;
+					uniforms.shadowMap.value = light.shadowMap;
+					uniforms.shadowMapSize.value = light.shadowMapSize;
 
-					uniforms.shadowMatrix.value[ j ] = light.shadowMatrix;
+					uniforms.shadowMatrix.value = light.shadowMatrix;
 
-					uniforms.shadowDarkness.value[ j ] = light.shadowDarkness;
-					uniforms.shadowBias.value[ j ] = light.shadowBias;
+					uniforms.shadowDarkness.value = light.shadowDarkness;
+					uniforms.shadowBias.value = light.shadowBias;
 
 					j ++;
 
