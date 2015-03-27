@@ -26,6 +26,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 	_preserveDrawingBuffer = parameters.preserveDrawingBuffer !== undefined ? parameters.preserveDrawingBuffer : false,
 
 	_clearColor = new THREE.Color( 0x000000 ),
+
 	_clearAlpha = 0;
 
 	// public properties
@@ -50,11 +51,13 @@ THREE.WebGLRenderer = function ( parameters ) {
 	this.sortObjects = true;
 	this.autoUpdateObjects = true;
 
+
 	// physically based shading
 
 	this.gammaInput = false;
 	this.gammaOutput = false;
 	this.physicallyBasedShading = false;
+
 
 	// shadow map
 
@@ -78,10 +81,13 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	this.autoScaleCubemaps = true;
 
+
+
 	// custom render plugins
 
 	this.renderPluginsPre = [];
 	this.renderPluginsPost = [];
+
 
 	// info
 

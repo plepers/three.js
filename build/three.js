@@ -20359,6 +20359,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 	_preserveDrawingBuffer = parameters.preserveDrawingBuffer !== undefined ? parameters.preserveDrawingBuffer : false,
 
 	_clearColor = new THREE.Color( 0x000000 ),
+
 	_clearAlpha = 0;
 
 	// public properties
@@ -20383,11 +20384,13 @@ THREE.WebGLRenderer = function ( parameters ) {
 	this.sortObjects = true;
 	this.autoUpdateObjects = true;
 
+
 	// physically based shading
 
 	this.gammaInput = false;
 	this.gammaOutput = false;
 	this.physicallyBasedShading = false;
+
 
 	// shadow map
 
@@ -20411,10 +20414,13 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	this.autoScaleCubemaps = true;
 
+
+
 	// custom render plugins
 
 	this.renderPluginsPre = [];
 	this.renderPluginsPost = [];
+
 
 	// info
 
@@ -27165,6 +27171,7 @@ THREE.WebGLRenderer = function ( parameters ) {
  * @author szimek / https://github.com/szimek/
  * @author alteredq / http://alteredqualia.com/
  */
+
 
 THREE.WebGLRenderTarget = function ( width, height, options ) {
 
@@ -39401,6 +39408,13 @@ THREE.VREffect = function ( renderer, done ) {
 
 	this._renderer = renderer;
 
+  this.paralaxing = 100;
+  var _taht = this;
+//  document.addEventListener( 'mousemove', function(e){
+//    _taht.paralaxing = e.pageX/2;
+//
+//  })
+
 	this._init = function() {
 		var self = this;
 		if ( !navigator.mozGetVRDevices && !navigator.getVRDevices ) {
@@ -39474,7 +39488,7 @@ THREE.VREffect = function ( renderer, done ) {
 		camera.matrixWorld.decompose( cameraLeft.position, cameraLeft.quaternion, cameraLeft.scale );
 		camera.matrixWorld.decompose( cameraRight.position, cameraRight.quaternion, cameraRight.scale );
 
-    var tm = -300;
+    var tm = this.paralaxing;
 		cameraLeft.translateX( leftEyeTranslation.x   * tm );
 		cameraRight.translateX( rightEyeTranslation.x * tm );
 
@@ -39525,7 +39539,7 @@ THREE.VREffect = function ( renderer, done ) {
 			height: renderer.domElement.height
 		};
 		// Hardcoded Rift display size
-		renderer.setSize( 1280, 800, false );
+		renderer.setSize( 1920, 1080, false );
 		this.startFullscreen();
 	};
 
@@ -39534,6 +39548,7 @@ THREE.VREffect = function ( renderer, done ) {
 		var renderer = this._renderer;
 		var vrHMD = this._vrHMD;
 		var canvas = renderer.domElement;
+//		var canvas = document.body;
 		var fullScreenChange =
 			canvas.mozRequestFullScreen? 'mozfullscreenchange' : 'webkitfullscreenchange';
 

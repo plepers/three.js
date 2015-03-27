@@ -3,6 +3,7 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
+
 THREE.WebGLRenderTarget = function ( width, height, options ) {
 
 	this.width = width;
