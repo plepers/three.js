@@ -45,7 +45,6 @@ THREE.BufferGeometry.prototype = {
 
 	addAttribute: function( name, type, numItems, itemSize ) {
 
-    console.log('[BufferGeometry.addAttribute]', name, numItems, itemSize );
 
 
 
