@@ -51,8 +51,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 	this.sortObjects = true;
 	this.autoUpdateObjects = true;
 
-
 	// physically based shading
+
 
 	this.gammaInput = false;
 	this.gammaOutput = false;

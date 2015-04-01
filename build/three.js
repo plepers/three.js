@@ -20384,8 +20384,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 	this.sortObjects = true;
 	this.autoUpdateObjects = true;
 
-
 	// physically based shading
+
 
 	this.gammaInput = false;
 	this.gammaOutput = false;
@@ -39408,7 +39408,7 @@ THREE.VREffect = function ( renderer, done ) {
 
 	this._renderer = renderer;
 
-  this.paralaxing = 100;
+  this.paralaxing = 150;
   var _taht = this;
 //  document.addEventListener( 'mousemove', function(e){
 //    _taht.paralaxing = e.pageX/2;
