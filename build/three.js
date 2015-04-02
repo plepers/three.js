@@ -20361,6 +20361,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	_clearAlpha = 0;
 
+
 	// public properties
 
 	this.domElement = _canvas;
@@ -20389,7 +20390,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 	this.gammaInput = false;
 	this.gammaOutput = false;
 	this.physicallyBasedShading = false;
-
 
 	// shadow map
 
@@ -39434,10 +39434,22 @@ THREE.VREffect = function ( renderer, done ) {
 				if ( devices[i] instanceof HMDVRDevice ) {
 					vrHMD = devices[i];
 					self._vrHMD = vrHMD;
-					self.leftEyeTranslation = vrHMD.getEyeTranslation( "left" );
-					self.rightEyeTranslation = vrHMD.getEyeTranslation( "right" );
-					self.leftEyeFOV = vrHMD.getRecommendedEyeFieldOfView( "left" );
-					self.rightEyeFOV = vrHMD.getRecommendedEyeFieldOfView( "right" );
+
+          if( vrHMD.getEyeTranslation !== undefined ) {
+
+            self.leftEyeTranslation = vrHMD.getEyeTranslation( "left" );
+            self.rightEyeTranslation = vrHMD.getEyeTranslation( "right" );
+            self.leftEyeFOV = vrHMD.getRecommendedEyeFieldOfView( "left" );
+            self.rightEyeFOV = vrHMD.getRecommendedEyeFieldOfView( "right" );
+          }
+          else {
+
+
+            self.leftEyeTranslation = vrHMD.getEyeParameters( "left").eyeTranslation;
+            self.rightEyeTranslation = vrHMD.getEyeParameters( "right").eyeTranslation;
+            self.leftEyeFOV = vrHMD.getEyeParameters( "left").recommendedFieldOfView;
+            self.rightEyeFOV = vrHMD.getEyeParameters( "right").recommendedFieldOfView;
+          }
 					break; // We keep the first we encounter
 				}
 			}

@@ -29,6 +29,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	_clearAlpha = 0;
 
+
 	// public properties
 
 	this.domElement = _canvas;
@@ -57,7 +58,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 	this.gammaInput = false;
 	this.gammaOutput = false;
 	this.physicallyBasedShading = false;
-
 
 	// shadow map
 
