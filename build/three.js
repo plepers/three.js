@@ -17966,6 +17966,15 @@ THREE.ShaderChunk = {
 
 	].join("\n"),
 
+	proj_pushed_vertex : [
+
+		"vec4 mvPosition = modelViewMatrix * vec4( position , 1.0 );",
+
+
+		"gl_Position = projectionMatrix * mvPosition;"
+
+	].join("\n"),
+
 	morphnormal_vertex: [
 
 		"#ifdef USE_MORPHNORMALS",
@@ -18226,7 +18235,7 @@ THREE.ShaderChunk = {
 						"vec3 shadowZ = vec3( shadowCoord.z );",
 						"shadowKernel[0] = vec3(lessThan(depthKernel[0], shadowZ ));",
 						"shadowKernel[0] *= vec3(0.25);",
-													
+
 						"shadowKernel[1] = vec3(lessThan(depthKernel[1], shadowZ ));",
 						"shadowKernel[1] *= vec3(0.25);",
 
@@ -20284,6 +20293,64 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "morphtarget_vertex" ],
 				THREE.ShaderChunk[ "skinning_vertex" ],
 				THREE.ShaderChunk[ "default_vertex" ],
+
+			"}"
+
+		].join("\n"),
+
+		fragmentShader: [
+
+//			"vec4 pack_depth( const in float depth ) {",
+//
+//				"const vec4 bit_shift = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );",
+//				"const vec4 bit_mask  = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );",
+//				"vec4 res = fract( depth * bit_shift );",
+//				"res -= res.xxyz * bit_mask;",
+//				"return res;",
+//
+//			"}",
+
+
+      "vec4 pack_depth( const in float depth ) {",
+
+      " const vec4 bit_shift = vec4( 1.0, 255.0, 65025.0, 16581375.0 );",
+      " const vec4 bit_mask  = vec4( 1.0/255.0, 1.0/255.0, 1.0/255.0, 0.0 );",
+      " vec4 res = fract( depth * bit_shift );",
+      " res -= res.yzww * bit_mask;",
+      " return res;",
+
+      "}",
+
+			"void main() {",
+
+				"gl_FragData[ 0 ] = pack_depth( gl_FragCoord.z );",
+
+
+				//"gl_FragData[ 0 ] = pack_depth( gl_FragCoord.z / gl_FragCoord.w );",
+				//"float z = ( ( gl_FragCoord.z / gl_FragCoord.w ) - 3.0 ) / ( 4000.0 - 3.0 );",
+				//"gl_FragData[ 0 ] = pack_depth( z );",
+				//"gl_FragData[ 0 ] = vec4( z, z, z, 1.0 );",
+
+			"}"
+
+		].join("\n")
+
+	}
+,	'depthProj': {
+
+		uniforms: {},
+
+		vertexShader: [
+
+			THREE.ShaderChunk[ "morphtarget_pars_vertex" ],
+			THREE.ShaderChunk[ "skinning_pars_vertex" ],
+
+			"void main() {",
+
+				THREE.ShaderChunk[ "skinbase_vertex" ],
+				THREE.ShaderChunk[ "morphtarget_vertex" ],
+				THREE.ShaderChunk[ "skinning_vertex" ],
+				THREE.ShaderChunk[ "proj_pushed_vertex" ],
 
 			"}"
 
@@ -40355,7 +40422,7 @@ THREE.ProjectorPlugin = function () {
 		_gl = renderer.context;
 		_renderer = renderer;
 
-		var depthShader = THREE.ShaderLib[ "depthRGBA" ];
+		var depthShader = THREE.ShaderLib[ "depthProj" ];
 		var depthUniforms = THREE.UniformsUtils.clone( depthShader.uniforms );
 
 		_depthMaterial = new THREE.ShaderMaterial( { fragmentShader: depthShader.fragmentShader, vertexShader: depthShader.vertexShader, uniforms: depthUniforms } );

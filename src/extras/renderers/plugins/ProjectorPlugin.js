@@ -17,7 +17,7 @@ THREE.ProjectorPlugin = function () {
 		_gl = renderer.context;
 		_renderer = renderer;
 
-		var depthShader = THREE.ShaderLib[ "depthRGBA" ];
+		var depthShader = THREE.ShaderLib[ "depthProj" ];
 		var depthUniforms = THREE.UniformsUtils.clone( depthShader.uniforms );
 
 		_depthMaterial = new THREE.ShaderMaterial( { fragmentShader: depthShader.fragmentShader, vertexShader: depthShader.vertexShader, uniforms: depthUniforms } );
