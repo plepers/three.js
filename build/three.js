@@ -39472,14 +39472,25 @@ THREE.VREffect = function ( renderer, done ) {
 	var cameraLeft = new THREE.PerspectiveCamera();
 	var cameraRight = new THREE.PerspectiveCamera();
 
-	this._renderer = renderer;
+  this.cameraLeft  = cameraLeft ;
+  this.cameraRight = cameraRight;
 
-  this.paralaxing = 150;
+	this._renderer = renderer;
+  this.forceStereo = false
+
+  this.paralaxing = 3;
   var _taht = this;
 //  document.addEventListener( 'mousemove', function(e){
 //    _taht.paralaxing = e.pageX/2;
 //
 //  })
+
+  this.leftEyeTranslation  = { x : -1, y: 0 }
+  this.rightEyeTranslation = { x : 1, y: 0 }
+  this.leftEyeFOV          = 90
+  this.rightEyeFOV         = 90
+
+
 
 	this._init = function() {
 		var self = this;
@@ -39494,6 +39505,7 @@ THREE.VREffect = function ( renderer, done ) {
 		} else {
 			navigator.mozGetVRDevices( gotVRDevices );
 		}
+
 		function gotVRDevices( devices ) {
 			var vrHMD;
 			var error;
@@ -39504,18 +39516,18 @@ THREE.VREffect = function ( renderer, done ) {
 
           if( vrHMD.getEyeTranslation !== undefined ) {
 
-            self.leftEyeTranslation = vrHMD.getEyeTranslation( "left" );
+            self.leftEyeTranslation  = vrHMD.getEyeTranslation( "left" );
             self.rightEyeTranslation = vrHMD.getEyeTranslation( "right" );
-            self.leftEyeFOV = vrHMD.getRecommendedEyeFieldOfView( "left" );
-            self.rightEyeFOV = vrHMD.getRecommendedEyeFieldOfView( "right" );
+            self.leftEyeFOV          = vrHMD.getRecommendedEyeFieldOfView( "left" );
+            self.rightEyeFOV         = vrHMD.getRecommendedEyeFieldOfView( "right" );
           }
           else {
 
 
-            self.leftEyeTranslation = vrHMD.getEyeParameters( "left").eyeTranslation;
+            self.leftEyeTranslation  = vrHMD.getEyeParameters( "left").eyeTranslation;
             self.rightEyeTranslation = vrHMD.getEyeParameters( "right").eyeTranslation;
-            self.leftEyeFOV = vrHMD.getEyeParameters( "left").recommendedFieldOfView;
-            self.rightEyeFOV = vrHMD.getEyeParameters( "right").recommendedFieldOfView;
+            self.leftEyeFOV          = vrHMD.getEyeParameters( "left").recommendedFieldOfView;
+            self.rightEyeFOV         = vrHMD.getEyeParameters( "right").recommendedFieldOfView;
           }
 					break; // We keep the first we encounter
 				}
@@ -39536,7 +39548,7 @@ THREE.VREffect = function ( renderer, done ) {
 		var vrHMD = this._vrHMD;
 		renderer.enableScissorTest( false );
 		// VR render mode if HMD is available
-		if ( vrHMD ) {
+		if ( vrHMD || this.forceStereo === true ) {
 			this.renderStereo.apply( this, arguments );
 			return;
 		}
@@ -39549,8 +39561,8 @@ THREE.VREffect = function ( renderer, done ) {
 		var leftEyeTranslation = this.leftEyeTranslation;
 		var rightEyeTranslation = this.rightEyeTranslation;
 		var renderer = this._renderer;
-		var rendererWidth = renderer.domElement.width / renderer.devicePixelRatio;
-		var rendererHeight = renderer.domElement.height / renderer.devicePixelRatio;
+		var rendererWidth = renderer.domElement.width // renderer.devicePixelRatio;
+		var rendererHeight = renderer.domElement.height // renderer.devicePixelRatio;
 		var eyeDivisionLine = rendererWidth / 2;
 
 		renderer.enableScissorTest( true );
@@ -39560,8 +39572,24 @@ THREE.VREffect = function ( renderer, done ) {
 			camera.updateMatrixWorld();
 		}
 
-		cameraLeft.projectionMatrix = this.FovToProjection( this.leftEyeFOV, true, camera.near, camera.far );
-		cameraRight.projectionMatrix = this.FovToProjection( this.rightEyeFOV, true, camera.near, camera.far );
+
+    cameraLeft.fov    = this.leftEyeFOV
+    cameraLeft.aspect = eyeDivisionLine / rendererHeight
+    cameraLeft.near   = camera.near
+    cameraLeft.far    = camera.far
+    cameraLeft.updateProjectionMatrix()
+
+
+
+    cameraRight.fov    = this.rightEyeFOV
+    cameraRight.aspect = eyeDivisionLine / rendererHeight
+    cameraRight.near   = camera.near
+    cameraRight.far    = camera.far
+    cameraRight.updateProjectionMatrix()
+
+
+    //cameraLeft.projectionMatrix = this.FovToProjection( 90, true, 1, 3000 );
+		//cameraRight.projectionMatrix = this.FovToProjection( this.rightEyeFOV, true, camera.near, camera.far );
 
 		camera.matrixWorld.decompose( cameraLeft.position, cameraLeft.quaternion, cameraLeft.scale );
 		camera.matrixWorld.decompose( cameraRight.position, cameraRight.quaternion, cameraRight.scale );
