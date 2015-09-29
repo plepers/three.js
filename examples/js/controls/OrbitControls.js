@@ -101,6 +101,21 @@ THREE.OrbitControls = function ( object, domElement ) {
 	var changeEvent = { type: 'change' };
 
 
+  this.init = function(){
+
+    var position = this.object.position;
+    var offset = position.clone().sub( this.target );
+
+    // angle from z-axis around y-axis
+
+    this._theta = Math.atan2( offset.x, offset.z );
+    this._phi   = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
+
+    this._radius = offset.length()
+  }
+  this.init();
+
+
 	this.rotateLeft = function ( angle ) {
 
 		if ( angle === undefined ) {
@@ -215,34 +230,27 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		// angle from z-axis around y-axis
 
-		var theta = Math.atan2( offset.x, offset.z );
 
-		// angle from y-axis
 
-		var phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
+		this._theta += thetaDelta;
+		this._phi += phiDelta;
 
-		if ( this.autoRotate ) {
+		this._phi = Math.max( this.minPolarAngle, Math.min( this.maxPolarAngle, this._phi ) );
+		this._phi = Math.max( EPS, Math.min( Math.PI - EPS, this._phi ) );
 
-			this.rotateLeft( getAutoRotationAngle() );
-
-		}
-
-		theta += thetaDelta;
-		phi += phiDelta;
+		var theta = this._theta
+		var phi   = this._phi
 
 		// restrict phi to be between desired limits
-		phi = Math.max( this.minPolarAngle, Math.min( this.maxPolarAngle, phi ) );
 
-		// restrict phi to be betwee EPS and PI-EPS
-		phi = Math.max( EPS, Math.min( Math.PI - EPS, phi ) );
-
-		var radius = offset.length() * scale;
-
+		this._radius *= scale;
 		// restrict radius to be between desired limits
-		radius = Math.max( this.minDistance, Math.min( this.maxDistance, radius ) );
+		radius = Math.max( this.minDistance, Math.min( this.maxDistance, this._radius ) );
 		
 		// move target to panned location
 		this.target.add( pan );
+
+
 
 		offset.x = radius * Math.sin( phi ) * Math.sin( theta );
 		offset.y = radius * Math.cos( phi );

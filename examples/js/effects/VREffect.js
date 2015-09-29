@@ -41,8 +41,8 @@ THREE.VREffect = function ( renderer, done ) {
 
   this.leftEyeTranslation  = { x : -1, y: 0 }
   this.rightEyeTranslation = { x : 1, y: 0 }
-  this.leftEyeFOV          = 90
-  this.rightEyeFOV         = 90
+  this.leftEyeFOV          = 100
+  this.rightEyeFOV         = 100
 
 
 
