@@ -3498,6 +3498,13 @@ THREE.WebGLRenderer = function ( parameters ) {
 			var material = null;
 
 			// opaque pass (front-to-back order)
+//      var i, l, c=0;
+//      for (i = 0, l = scene.__webglObjects.length; i < l; i++) {
+//        if( scene.__webglObjects[i].render ) c++;
+//
+//      }
+//
+//      console.log( scene.__webglObjects.length, c  )
 
 			this.setBlending( THREE.NoBlending );
 
@@ -4502,21 +4509,21 @@ THREE.WebGLRenderer = function ( parameters ) {
 			}
 
 
-
-			if ( material instanceof THREE.MeshPhongMaterial ||
-				 material instanceof THREE.MeshLambertMaterial ||
-				 material.lights ) {
-
-				if ( _lightsNeedUpdate ) {
-
-					setupLights( program, lights, camera );
-					_lightsNeedUpdate = false;
-
-				}
-
-				refreshUniformsLights( m_uniforms, _lights );
-
-			}
+//
+//			if ( material instanceof THREE.MeshPhongMaterial ||
+//				 material instanceof THREE.MeshLambertMaterial ||
+//				 material.lights ) {
+//
+//				if ( _lightsNeedUpdate ) {
+//
+//					setupLights( program, lights, camera );
+//					_lightsNeedUpdate = false;
+//
+//				}
+//
+//				refreshUniformsLights( m_uniforms, _lights );
+//
+//			}
 
 			if ( material instanceof THREE.MeshBasicMaterial ||
 				 material instanceof THREE.MeshLambertMaterial ||
@@ -4549,12 +4556,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 				m_uniforms.opacity.value = material.opacity;
 
 			}
-
-      if ( object.receiveShadow && ! material._shadowPass ) {
-
-        refreshUniformsShadow( m_uniforms, lights );
-
-      }
+//
+//      if ( object.receiveShadow && ! material._shadowPass ) {
+//
+//        refreshUniformsShadow( m_uniforms, lights );
+//
+//      }
 
 
       if ( material.customShader != null ) {

@@ -21,7 +21,7 @@
  * https://drive.google.com/folderview?id=0BzudLt22BqGRbW9WTHMtOWMzNjQ&usp=sharing#list
  *
  */
-THREE.VREffect = function ( renderer, done ) {
+THREE.VREffect = function ( renderer, fsElement ) {
 
 	var cameraLeft = new THREE.PerspectiveCamera();
 	var cameraRight = new THREE.PerspectiveCamera();
@@ -32,26 +32,25 @@ THREE.VREffect = function ( renderer, done ) {
 	this._renderer = renderer;
   this.forceStereo = false
 
-  this.paralaxing = 3;
-  var _taht = this;
+  this.paralaxing = 100;
+//  var _taht = this;
 //  document.addEventListener( 'mousemove', function(e){
 //    _taht.paralaxing = e.pageX/2;
 //
 //  })
 
-  this.leftEyeTranslation  = { x : -1, y: 0 }
-  this.rightEyeTranslation = { x : 1, y: 0 }
+  this.leftEyeTranslation  = { x : -0.03, y: 0 }
+  this.rightEyeTranslation = { x : 0.03, y: 0 }
   this.leftEyeFOV          = 100
   this.rightEyeFOV         = 100
+
+  this.fsElement = fsElement
 
 
 
 	this._init = function() {
 		var self = this;
 		if ( !navigator.mozGetVRDevices && !navigator.getVRDevices ) {
-			if ( done ) {
-				done("Your browser is not VR Ready");
-			}
 			return;
 		}
 		if ( navigator.getVRDevices ) {
@@ -72,25 +71,19 @@ THREE.VREffect = function ( renderer, done ) {
 
             self.leftEyeTranslation  = vrHMD.getEyeTranslation( "left" );
             self.rightEyeTranslation = vrHMD.getEyeTranslation( "right" );
-            self.leftEyeFOV          = vrHMD.getRecommendedEyeFieldOfView( "left" );
-            self.rightEyeFOV         = vrHMD.getRecommendedEyeFieldOfView( "right" );
+            self.leftEyeFOV          = 100 //vrHMD.getRecommendedEyeFieldOfView( "left" );
+            self.rightEyeFOV         = 100 //vrHMD.getRecommendedEyeFieldOfView( "right" );
           }
           else {
 
 
             self.leftEyeTranslation  = vrHMD.getEyeParameters( "left").eyeTranslation;
             self.rightEyeTranslation = vrHMD.getEyeParameters( "right").eyeTranslation;
-            self.leftEyeFOV          = vrHMD.getEyeParameters( "left").recommendedFieldOfView;
-            self.rightEyeFOV         = vrHMD.getEyeParameters( "right").recommendedFieldOfView;
+            self.leftEyeFOV          =  106 //vrHMD.getEyeParameters( "left").recommendedFieldOfView;
+            self.rightEyeFOV         =  106 //vrHMD.getEyeParameters( "right").recommendedFieldOfView;
           }
 					break; // We keep the first we encounter
 				}
-			}
-			if ( done ) {
-				if ( !vrHMD ) {
-				 error = 'HMD not available';
-				}
-				done( error );
 			}
 		}
 	};
@@ -207,7 +200,7 @@ THREE.VREffect = function ( renderer, done ) {
 		var self = this;
 		var renderer = this._renderer;
 		var vrHMD = this._vrHMD;
-		var canvas = renderer.domElement;
+		var canvas = fsElement;
 //		var canvas = document.body;
 		var fullScreenChange =
 			canvas.mozRequestFullScreen? 'mozfullscreenchange' : 'webkitfullscreenchange';
